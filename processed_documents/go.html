@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Citation Lookup</title>
+<style>
+  body { font-family: -apple-system, sans-serif; max-width: 600px; margin: 100px auto; text-align: center; color: #ccc; background: #1a1a1a; }
+  a { color: #ffd700; }
+</style>
+</head>
+<body>
+<p>Resolving citation <span id="anchor"></span>...</p>
+<p><small><a id="fallback" href="">Click here if not redirected</a></small></p>
+<script>
+(async () => {
+  const hash = window.location.hash.replace('#', '');
+  if (!hash) { document.body.innerHTML = '<p>No citation anchor specified. Use <code>go.html#42</code></p>'; return; }
+  document.getElementById('anchor').textContent = '¶' + hash;
+  const anchor = '¶' + hash;
+  const docs = ['subset35', 'subset40', 'subset58'];
+  for (const doc of docs) {
+    try {
+      const resp = await fetch(doc + '/citations.json');
+      const data = await resp.json();
+      if (data.citations[anchor]) {
+        window.location.href = doc + '/viewer.html#' + hash;
+        return;
+      }
+    } catch(e) { /* try next */ }
+  }
+  document.body.innerHTML = '<p>Citation ¶' + hash + ' not found in any document.</p>';
+})();
+</script>
+</body>
+</html>

@@ -38,7 +38,7 @@ Rules:
 - **One page = one topic.** Don't cram multiple entities into one page.
 - **Cross-references footer is mandatory.** Every page links to related pages.
 - **Links are pure markdown:** `[text](relative/path.md)`. Relative to `wiki/`.
-- **Citations to sources:** `[¶N](viewer.html#N)` where the viewer is under `processed_documents/{doc}/`.
+- **Citations to sources:** Every `[¶N]` in wiki page body text MUST be a clickable markdown link: `[¶N](http://localhost:8765/go.html#N)` where `{doc}` is the source document folder name. Plain-text `[¶N]` is not acceptable. Ranges like `[¶A-B]` link to the first paragraph in the range.
 - **No frontmatter.** Metadata goes in a bold line under the title.
 - **Keep pages focused.** Entity pages describe one thing. Concept pages explain one idea.
 
@@ -80,6 +80,11 @@ Append-only. Each entry starts with `## [YYYY-MM-DD] operation-type | details`. 
 1. Place PDF in `raw_sources/`
 2. Run: `python docling_converter.py raw_sources/doc.pdf --output-dir processed_documents`
    - This creates `processed_documents/{doc_name}/` with `document.md`, `citations.json`, `viewer.html`, `pages/`
+3. Start the citation viewer HTTP server (do this once per session):
+   ```bash
+   cd processed_documents && python3 -m http.server 8765 &
+   ```
+   This makes all `[¶N]` citation links clickable in-browser.
 
 ### Supervised mode (one source at a time, recommended)
 1. User says: "ingest processed_documents/{doc_name}"
@@ -105,18 +110,145 @@ Append-only. Each entry starts with `## [YYYY-MM-DD] operation-type | details`. 
 3. At the end, report what was created/updated
 4. Append one log entry per source
 
-## Query workflow
+## Query workflow (qa_agent.py — external LLM)
+
+This workflow delegates to `qa_agent.py`, which uses an external LLM to answer
+questions with paragraph citations. Use this when:
+- Processing batch questions from Excel files (`--excel` flag)
+- The user explicitly asks to use the qa_agent
+- You need the BM25 retrieval mode for large documents
+
+For interactive question-answering where you should research directly using
+wiki pages and document.md, prefer the **Direct Research Query Workflow** below.
 
 1. User asks a question
-2. Read `wiki/index.md` to find relevant pages
-3. Read those pages, follow cross-references
-4. If wiki-level synthesis is enough: answer with citations to wiki pages
-5. If source-level detail is needed: search `citations.json` in the relevant `processed_documents/{doc}/` folder, or use `qa_agent.py`:
-   ```
-   python qa_agent.py -d processed_documents/{doc} -q "question" -m bm25
-   ```
-6. Synthesize answer with `[¶N]` citations pointing to the source viewer
-7. If the user says "file this", create a new wiki page with the answer and update the index
+2. Read `wiki/index.md` and identify which `processed_documents/` 
+   folders are relevant, based on the sources listed next to each page
+
+3. **If the index gives clear indications:**
+   Launch `qa_agent.py` in full mode on the relevant documents:
+python qa_agent.py -d processed_documents/{doc1} processed_documents/{doc2}
+-m full -q "user's question"
+
+4. **If the index does not give sufficient indications:**
+   Stop and ask the user:
+"The wiki index does not contain enough information to identify
+the relevant documents. Which processed_documents should I search?"
+   Wait for the answer, then proceed as in step 3.
+
+5. Synthesize the answer using qa_agent's response as the base.
+   Always cite with `[¶N]` linked to the correct document's viewer:
+   `[¶42](http://localhost:8765/go.html#42)`
+
+6. If the user says "file this":
+   - Create `wiki/analyses/{descriptive-name}.md` with the answer
+   - Update `wiki/index.md`
+   - Append to `wiki/log.md`:
+     `## [DATE] query | "question" — filed as analyses/{name}.md`
+
+## Direct Research Query Workflow (wiki-guided, no external tools)
+
+This is the **default workflow** for answering questions. You, the Claude Code
+agent, perform all research inline — no `qa_agent.py`, no external LLM.
+
+**Protocol — follow every step in order. Do not skip.**
+
+### Step 1: Orient via wiki
+Read `wiki/index.md`. Identify candidate pages whose titles or summaries match
+the user's question. Also read `wiki/overview.md` for cross-source synthesis.
+
+**If zero candidates are found:** Proceed to "No wiki coverage" below.
+
+### Step 2: Extract citations from wiki pages
+For each candidate page found in Step 1:
+- Read the full page.
+- From the `**Source:**` metadata line, extract the source document name(s).
+  Example: `**Source:** [subset35](../summaries/subset35.md)` means this page
+  draws from the `subset35` processed document.
+- Collect every `[¶N]` and `[¶A-B]` anchor appearing in the page body.
+- Group anchors by source document. A page with a single source means all its
+  anchors belong to that source. For multi-source pages, use the paragraph
+  content surrounding each anchor to infer which document it references.
+
+### Step 3: Read primary-source paragraphs from document.md
+For each source document identified in Step 2:
+- The file is `processed_documents/{doc}/document.md`.
+- For every `[¶N]` anchor collected from wiki pages, use `grep` to locate
+  that anchor in document.md, then read the surrounding context (~20 lines
+  before and after the anchor). Do NOT read the entire file unless it is small.
+- For range anchors `[¶A-B]`: sample the first, middle, and last paragraphs
+  in the range. Read each individually using the same grep approach.
+- When reading large ranges, prioritize paragraphs that appear most relevant
+  to the specific question.
+
+### Step 4: Expand search if needed
+If the paragraphs from Step 3 are insufficient to answer the question:
+- Search document.md for keywords from the question:
+  `grep -n -i "keyword" processed_documents/{doc}/document.md`
+- Read surrounding context of any matches.
+- Repeat until you have enough information for a complete answer.
+
+### Step 5: Synthesize the answer with mandatory citations
+Compose a clear, concise answer. **Every factual claim MUST carry an inline
+citation.** Use **reference-style markdown links**: the inline text is just
+`[¶N]`, and the URL is defined once at the bottom of the answer.
+
+Example — inline in body text:
+```
+The STM has eight defined states [¶238-274].
+```
+
+Example — URL definitions at the bottom of the answer:
+```
+[¶238-274]: http://localhost:8765/go.html#238
+[¶42]: http://localhost:8765/go.html#42
+```
+
+Rules (mandatory):
+- Inline citations are bare `[¶N]` or `[¶A-B]` — no parenthesized URL inline.
+- Every `[¶N]` used inline MUST have a corresponding reference definition.
+- `go.html` automatically resolves the anchor to the correct document's viewer.
+- For range anchors `[¶A-B]`: link to the first paragraph in the range.
+- **No claim may appear without a citation.**
+- If a claim draws from multiple documents, include all relevant citations.
+
+### Step 6: Format the answer
+Structure every answer like this:
+
+```
+[Concise answer text with [¶N] citations inline.]
+
+**Sources:**
+- [¶N] — one-line description
+- [¶M] — one-line description
+
+**Consulted wiki pages:**
+- [Page Name](path/to/page.md)
+
+[¶N]: http://localhost:8765/go.html#N
+[¶M]: http://localhost:8765/go.html#M
+```
+
+### No wiki coverage
+If Step 1 finds no relevant wiki pages, respond:
+"The wiki does not yet have pages covering this topic. I can search the
+processed documents directly — tell me which document(s) to consult, or I
+can suggest based on overview.md."
+
+Then:
+- Read `wiki/overview.md` to suggest candidate documents.
+- Or ask the user to specify.
+- Once document(s) are chosen, search document.md by keyword (Step 4) and
+  proceed to Steps 5-6. Citations are still mandatory.
+
+### Filing the answer
+If the user says "file this":
+- Create the page under `wiki/concepts/` or `wiki/entities/` as appropriate.
+- Follow the page format conventions. All citations in the filed page MUST
+  be clickable links, not plain text.
+- Update `wiki/index.md`.
+- Append to `wiki/log.md`:
+  `## [DATE] query | "question" — filed as {path}`
 
 ## Lint workflow
 
@@ -133,7 +265,15 @@ Write findings to `wiki/lint_reports/YYYY-MM-DD.md`. Append log entry.
 
 ## Citation system
 
-- Source documents use `[¶N]` anchors generated by docling_converter.py
-- In wiki pages, cite sources as: `[¶42](../../processed_documents/{doc}/viewer.html#42)`
-- Each citation links to viewer.html showing the page with a yellow bounding box on the cited paragraph
+- Source documents (document.md) use single `[¶N]` anchors generated by
+  docling_converter.py. There are no range anchors in document.md — ranges
+  exist only in wiki pages as shorthand (e.g., `[¶78-79, 238-274]`).
+- In wiki pages and in answers, cite sources as:
+  `[¶42](http://localhost:8765/go.html#42)`
+- Each citation links to viewer.html showing the page with a yellow bounding
+  box on the cited paragraph.
 - `citations.json` provides O(1) lookup: `citations["¶42"]` → `{page_id, type, content, bbox}`
+- Path convention: citations use `http://localhost:8765/` URLs pointing to a local
+  HTTP server serving the `processed_documents/` directory. Start it once with:
+  `cd processed_documents && python3 -m http.server 8765 &`
+  The format is `http://localhost:8765/go.html#N`.
