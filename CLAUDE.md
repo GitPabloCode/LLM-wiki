@@ -38,7 +38,7 @@ Rules:
 - **One page = one topic.** Don't cram multiple entities into one page.
 - **Cross-references footer is mandatory.** Every page links to related pages.
 - **Links are pure markdown:** `[text](relative/path.md)`. Relative to `wiki/`.
-- **Citations to sources:** Every `[¶N]` in wiki page body text MUST be a clickable markdown link: `[¶N](http://localhost:8765/{doc}/go.html#N)` where `{doc}` is the source document folder name (e.g. `subset40`). Plain-text `[¶N]` is not acceptable. Ranges like `[¶A-B]` link to the first paragraph in the range.
+- **Citations to sources:** Every `[¶N]` in wiki page body text MUST be a clickable markdown link: `[¶N](http://localhost:8765/{doc}/viewer.html#N)` where `{doc}` is the source document folder name (e.g. `subset40`). Plain-text `[¶N]` is not acceptable. Ranges like `[¶A-B]` link to the first paragraph in the range.
 - **No frontmatter.** Metadata goes in a bold line under the title.
 - **Keep pages focused.** Entity pages describe one thing. Concept pages explain one idea.
 
@@ -132,9 +132,14 @@ python qa_agent.py -d processed_documents/{doc} -q "user's exact question"
 qa_agent.py reads the full document.md, passes it to the LLM, and returns
 the answer with `[¶N]` citations.
 
-### Step 3: Show the answer
-Report qa_agent.py's output. Citations must be linked with the document
-folder name: `[¶N](http://localhost:8765/{doc}/go.html#N)`
+**CRITICAL:** Pass the user's question **verbatim** — do not rephrase, translate,
+or summarize it. The `-q` argument must be the exact string the user wrote.
+
+### Step 3: Show the answer (verbatim)
+Report qa_agent.py's output **verbatim** — copy it exactly as printed, with
+no additions, removals, or explanations of your own. Citations must be linked
+with the document folder name:
+`[¶N](http://localhost:8765/{doc}/viewer.html#N)`
 
 ### Filing
 If the user says "file this": create a wiki page, update index.md and log.md.
@@ -158,11 +163,11 @@ Write findings to `wiki/lint_reports/YYYY-MM-DD.md`. Append log entry.
   docling_converter.py. There are no range anchors in document.md — ranges
   exist only in wiki pages as shorthand (e.g., `[¶78-79, 238-274]`).
 - In wiki pages and in answers, cite sources with the document folder:
-  `[¶42](http://localhost:8765/{doc}/go.html#42)`
+  `[¶42](http://localhost:8765/{doc}/viewer.html#42)`
 - Each citation links to viewer.html showing the page with a yellow bounding
   box on the cited paragraph.
 - `citations.json` provides O(1) lookup: `citations["¶42"]` → `{page_id, type, content, bbox}`
 - Path convention: citations use `http://localhost:8765/` URLs pointing to a local
   HTTP server serving the `processed_documents/` directory. Start it once with:
   `cd processed_documents && python3 -m http.server 8765 &`
-  The format is `http://localhost:8765/{doc}/go.html#N` (e.g. `http://localhost:8765/subset40/go.html#42`).
+  The format is `http://localhost:8765/{doc}/viewer.html#N` (e.g. `http://localhost:8765/subset40/viewer.html#42`).
