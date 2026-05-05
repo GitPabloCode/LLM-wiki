@@ -2,14 +2,14 @@
 
 **Source:** [subset40](../summaries/subset40.md) | **Date:** 2026-04-29 | **Type:** concept
 
-**ERTMS Dimensioning** refers to the quantitative data-size limits that govern how much information can be packed into a single ETCS packet or message, and how much the on-board equipment must be able to store. These limits form the computational and memory envelope within which all interoperable ERTMS/ETCS implementations must operate. The concept spans two perspectives: the **trackside constraint** (maximum N_ITER per packet — what may be transmitted) and the **on-board requirement** (minimum memorised — what must be stored). [¶143-191]
+**ERTMS Dimensioning** refers to the quantitative data-size limits that govern how much information can be packed into a single ETCS packet or message, and how much the on-board equipment must be able to store. These limits form the computational and memory envelope within which all interoperable ERTMS/ETCS implementations must operate. The concept spans two perspectives: the **trackside constraint** (maximum N_ITER per packet — what may be transmitted) and the **on-board requirement** (minimum memorised — what must be stored). [¶143-191](http://localhost:8765/go.html#subset40-143)
 
 ## Trackside vs. on-board limits
 
-For each data type, Subset-040 defines two numbers that serve different purposes [¶148-185]:
+For each data type, Subset-040 defines two numbers that serve different purposes [¶148-185](http://localhost:8765/go.html#subset40-148):
 
-- **Maximum N_ITER per packet** — The trackside must not exceed this value when constructing a packet. It ensures that packet sizes remain within the processing and buffering capacity of on-board equipment. Where Subset-040 sets a limit, it overrides the SRS default of 31 iterations. [¶145-146]
-- **Minimum memorised on-board** — The on-board must be able to store at least this many items. This value is often **higher** than the per-packet maximum because the on-board may accumulate data across multiple messages (e.g., SSP sections from successive MAs, or TSRs from multiple balise groups). [¶149]
+- **Maximum N_ITER per packet** — The trackside must not exceed this value when constructing a packet. It ensures that packet sizes remain within the processing and buffering capacity of on-board equipment. Where Subset-040 sets a limit, it overrides the SRS default of 31 iterations. [¶145-146](http://localhost:8765/go.html#subset40-145)
+- **Minimum memorised on-board** — The on-board must be able to store at least this many items. This value is often **higher** than the per-packet maximum because the on-board may accumulate data across multiple messages (e.g., SSP sections from successive MAs, or TSRs from multiple balise groups). [¶149](http://localhost:8765/go.html#subset40-149)
 
 ## Dimensioning table
 
@@ -36,7 +36,7 @@ For each data type, Subset-040 defines two numbers that serve different purposes
 
 ## Rationale behind the gaps
 
-The minimum memorised value often exceeds the per-packet maximum for a specific reason [¶150-185]:
+The minimum memorised value often exceeds the per-packet maximum for a specific reason [¶150-185](http://localhost:8765/go.html#subset40-150):
 
 - **SSP (50 vs. 31)**: At one SSP change every 500m, 50 sections cover 25km — a practical MA length.
 - **TSR (30 vs. 10)**: Multiple balise groups can each contribute up to 10 TSR packets, accumulating to 30 in memory.
@@ -45,7 +45,7 @@ The minimum memorised value often exceeds the per-packet maximum for a specific 
 
 ## Data flow constraints
 
-The trackside must not request position reports at intervals shorter than **5 seconds**. [¶190-191]
+The trackside must not request position reports at intervals shorter than **5 seconds**. [¶190-191](http://localhost:8765/go.html#subset40-190)
 
 ## Cross-references
 - [ERTMS Engineering Rules](ertms-engineering-rules.md) — the broader concept these dimensioning limits belong to

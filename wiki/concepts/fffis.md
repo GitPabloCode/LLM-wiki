@@ -6,25 +6,25 @@
 
 ## Scope boundaries
 
-In the context of SUBSET-035 (the FFFIS STM) [¶63-65]:
+In the context of SUBSET-035 (the FFFIS STM) [¶63-65](http://localhost:8765/go.html#subset35-63):
 
-- **Lower boundary**: The PROFIBUS Field Data Link (FDL) layer. The PROFIBUS standards (CENELEC 50170-2) cover the physical layer including connectors. [¶64]
-- **Upper boundary**: The functions linked to the interface between the ERTMS/ETCS on-board equipment and an STM — essentially the Application Layer services. [¶65]
+- **Lower boundary**: The PROFIBUS Field Data Link (FDL) layer. The PROFIBUS standards (CENELEC 50170-2) cover the physical layer including connectors. [¶64](http://localhost:8765/go.html#subset35-64)
+- **Upper boundary**: The functions linked to the interface between the ERTMS/ETCS on-board equipment and an STM — essentially the Application Layer services. [¶65](http://localhost:8765/go.html#subset35-65)
 
 ## Protocol layers
 
-The FFFIS STM protocol stack has four layers [¶206-211]:
+The FFFIS STM protocol stack has four layers [¶206-211](http://localhost:8765/go.html#subset35-206):
 
 1. **Application Layer** (defined in SUBSET-058) — message formats and procedures
 2. **Safe Time Layer** (defined in SUBSET-056) — safe timestamping and sequence numbering
 3. **Safe Link Layer** (defined in SUBSET-057) — safe addressing and error detection
 4. **PROFIBUS FDL** (defined in CENELEC 50170-2) — fieldbus data link
 
-The Safe Time Layer and Safe Link Layer together form the **Safety Layers**. [¶208]
+The Safe Time Layer and Safe Link Layer together form the **Safety Layers**. [¶208](http://localhost:8765/go.html#subset35-208)
 
 ## Interchangeability goal
 
-The FFFIS STM enables the ERTMS/ETCS on-board equipment to be connected to any STM, meaning the on-board and the STMs are interchangeable. The assembly achieves the same functionality as the legacy national system while ensuring seamless transitions between ETCS and NTC, with no extra trackside equipment beyond Eurobalises. [¶66-68]
+The FFFIS STM enables the ERTMS/ETCS on-board equipment to be connected to any STM, meaning the on-board and the STMs are interchangeable. The assembly achieves the same functionality as the legacy national system while ensuring seamless transitions between ETCS and NTC, with no extra trackside equipment beyond Eurobalises. [¶66-68](http://localhost:8765/go.html#subset35-66)
 
 ## Cross-references
 - [STM States](stm-states.md) — the state machine the FFFIS STM defines for STMs

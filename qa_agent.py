@@ -2,24 +2,29 @@
 """
 qa_agent.py — Agente Q&A che risponde citando i paragrafi con anchor [¶N].
 
+Passa l'intero document.md nel contesto dell'LLM e richiede citazioni
+puntuali con anchor [¶N] per ogni affermazione.
+
 Utilizzo:
   python qa_agent.py --doc-dir processed_documents/subset40
-  python qa_agent.py -d processed_documents/subset40 -q "domanda"
+  python qa_agent.py --doc-dir processed_documents/subset40 --model llama3
 """
 import argparse
 import json
 import re
 import sys
 import textwrap
+import time
 from pathlib import Path
 
 from datapizza.clients.openai_like import OpenAILikeClient
+from html_reporter import generate_html_report
 
 # ---------------------------------------------------------------------------
 # Agente Q&A
 # ---------------------------------------------------------------------------
 
-SYSTEM_PROMPT_FULL = textwrap.dedent("""\
+SYSTEM_PROMPT = textwrap.dedent("""\
     Sei un assistente specializzato nell'analisi di documenti tecnici.
     Rispondi alla domanda dell'utente basandoti ESCLUSIVAMENTE sul documento fornito.
 
@@ -37,6 +42,7 @@ SYSTEM_PROMPT_FULL = textwrap.dedent("""\
     - Alla fine, elenca le fonti in formato compatto:
       "Fonti: ¶42, ¶58, ¶103"
     """)
+
 
 class QAAgent:
     """Agente Q&A con citazione dei paragrafi tramite anchor Docling [¶N].
@@ -57,7 +63,6 @@ class QAAgent:
         self._markdown: str = ""
         self._client: OpenAILikeClient | None = None
         self._anchor_to_doc_dir: dict[str, Path] = {}
-        # Primo doc_dir per retrocompatibilità
         self.doc_dir = self.doc_dirs[0]
 
     # ── Inizializzazione ─────────────────────────────────────────────────
@@ -111,20 +116,22 @@ class QAAgent:
 
     # ── Chiamata LLM ────────────────────────────────────────────────────
 
-    def _call_llm(self, system_prompt: str, user_prompt: str) -> tuple[str, dict[str, int]]:
-        """Restituisce (testo_risposta, {prompt_tokens, completion_tokens, total_tokens})."""
+    def _call_llm(self, system_prompt: str, user_prompt: str) -> tuple[str, dict[str, int], float]:
+        """Restituisce (testo_risposta, {prompt_tokens, completion_tokens, total_tokens}, duration_seconds)."""
+        t0 = time.perf_counter()
         response = self._client.invoke(
             input=user_prompt,
             system_prompt=system_prompt,
             temperature=0.1,
         )
+        duration = time.perf_counter() - t0
         text = response.text or ""
         usage = {
             "prompt_tokens": response.usage.prompt_tokens,
             "completion_tokens": response.usage.completion_tokens,
             "total_tokens": response.usage.prompt_tokens + response.usage.completion_tokens,
         }
-        return text, usage
+        return text, usage, duration
 
     # ── Lookup fonti ────────────────────────────────────────────────────
 
@@ -157,23 +164,16 @@ class QAAgent:
             result.append(source)
         return result
 
-    # ── Modalità Full-Context ───────────────────────────────────────────
-
-    def _ask_full(self, question: str) -> dict:
+    def ask(self, question: str) -> dict:
         user_prompt = (
             f"DOCUMENTO:\n\n{self._markdown}\n\n"
             f"DOMANDA: {question}"
         )
 
-        answer, tokens = self._call_llm(SYSTEM_PROMPT_FULL, user_prompt)
+        answer, tokens, duration = self._call_llm(SYSTEM_PROMPT, user_prompt)
         anchors = self._extract_anchors(answer)
         sources = self._lookup_sources(anchors)
-        return {"answer": answer, "sources": sources, "mode": "full", "tokens": tokens}
-
-    # ── API pubblica ────────────────────────────────────────────────────
-
-    def ask(self, question: str) -> dict:
-        return self._ask_full(question)
+        return {"answer": answer, "sources": sources, "tokens": tokens, "duration": duration}
 
 
 # ---------------------------------------------------------------------------
@@ -182,8 +182,6 @@ class QAAgent:
 
 def format_answer(result: dict) -> str:
     lines = [
-        f"{'─' * 60}",
-        f"Modalità: {result['mode']}",
         f"{'─' * 60}",
         "",
         result["answer"].rstrip(),
@@ -194,7 +192,7 @@ def format_answer(result: dict) -> str:
         lines.append("─" * 60)
         lines.append("FONTI VERIFICATE:")
         lines.append("")
-        for i, src in enumerate(result["sources"], 1):
+        for src in result["sources"]:
             content_preview = src["content"][:200].replace("\n", " ")
             if len(src["content"]) > 200:
                 content_preview += "…"
@@ -202,7 +200,30 @@ def format_answer(result: dict) -> str:
             lines.append(f"      {content_preview}")
             lines.append("")
 
+    if result.get("duration") is not None:
+        lines.append("")
+        lines.append(f"Tempo di risposta: {result['duration']:.2f}s")
+
     return "\n".join(lines)
+
+
+def generate_report(
+    results: list[dict],
+    doc_dirs: list[str],
+    output_path: str,
+    model: str = "",
+    title: str = "Report Q&A",
+) -> Path:
+    """Genera un report HTML da una lista di risultati qa_agent.
+
+    Args:
+        results: lista di dict con chiavi {question, answer, sources, tokens, duration}
+        doc_dirs: cartelle dei documenti processed
+        output_path: percorso del file HTML di output
+        model: nome del modello usato
+        title: titolo del report
+    """
+    return generate_html_report(results, doc_dirs, output_path, model, title)
 
 
 # ---------------------------------------------------------------------------
@@ -215,12 +236,13 @@ def parse_args() -> argparse.Namespace:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=textwrap.dedent("""\
             esempi:
-              python qa_agent.py -d processed_documents/subset40
-              python qa_agent.py -d processed_documents/subset35 processed_documents/subset40 -q "domanda"
+              python qa_agent.py --doc-dir processed_documents/subset40
+              python qa_agent.py -d processed_documents/subset35 processed_documents/subset40 processed_documents/subset58
+              python qa_agent.py -d processed_documents/subset40 -q "quanto deve fermarsi il treno?"
         """),
     )
     p.add_argument("-d", "--doc-dir", required=True, nargs="+",
-                   help="Cartella/e con document.md e citations.json")
+                   help="Cartella/e con document.md e citations.json (una o più)")
     p.add_argument("-q", "--question", default=None,
                    help="Domanda singola")
     p.add_argument("--model", default="deepseek-v4-flash:cloud",
@@ -265,6 +287,7 @@ def main() -> None:
         result = agent.ask(args.question)
         print(format_answer(result))
     else:
+        # REPL interattivo
         print(f"\n🤖 Q&A Agent — subset: {', '.join(d.name for d in agent.doc_dirs)}")
         print(f"   Modello: {agent.model}")
         print(f"   Documento combinato: {len(agent._markdown):,} char")

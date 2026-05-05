@@ -55,9 +55,7 @@ def generate_html_report(
     """Genera un report HTML con risposte e link cliccabili alle fonti.
 
     Args:
-        results: lista di {
-            question, expected_answer, expected_page, answer, sources
-        }
+        results: lista di {question, answer, sources, tokens, duration}
         sources è lista di {anchor, page, type, content, doc_dir}
         doc_dirs: stringa o lista di cartelle che contengono viewer.html
         output_path: dove salvare l'HTML
@@ -74,14 +72,14 @@ def generate_html_report(
     tot_prompt = 0
     tot_completion = 0
     tot_total = 0
+    tot_duration = 0.0
 
     for i, r in enumerate(results, 1):
         question = r.get("question", "")
-        expected_answer = r.get("expected_answer") or ""
-        expected_page = r.get("expected_page") or ""
         answer = r.get("answer", "")
         sources: list[dict] = r.get("sources", [])
         tokens: dict = r.get("tokens", {})
+        duration = r.get("duration")
 
         pt = tokens.get("prompt_tokens", 0) or 0
         ct = tokens.get("completion_tokens", 0) or 0
@@ -89,6 +87,8 @@ def generate_html_report(
         tot_prompt += pt
         tot_completion += ct
         tot_total += tt
+        if duration is not None:
+            tot_duration += duration
 
         answer_linked = _linkify_anchors(answer, prefix_map, html_dir)
 
@@ -113,6 +113,13 @@ def generate_html_report(
         else:
             fonti_html = '<span class="no-source">—</span>'
 
+        if duration is not None:
+            duration_html = (
+                f'<span class="duration-info">{duration:.2f}s</span>'
+            )
+        else:
+            duration_html = '<span class="no-source">—</span>'
+
         token_html = (
             f'<span class="token-info" title="prompt: {pt} · completion: {ct}">'
             f'{tt}</span>'
@@ -122,10 +129,9 @@ def generate_html_report(
             <tr>
                 <td class="col-num">{i}</td>
                 <td class="col-question">{question}</td>
-                <td class="col-gt">{expected_answer}</td>
-                <td class="col-gt-page">{expected_page}</td>
                 <td class="col-answer">{answer_linked}</td>
                 <td class="col-sources">{fonti_html}</td>
+                <td class="col-duration">{duration_html}</td>
                 <td class="col-tokens">{token_html}</td>
             </tr>
         """)
@@ -142,7 +148,6 @@ def generate_html_report(
             --border: #e5e5e5;
             --header-bg: #1e293b;
             --header-text: #ffffff;
-            --gt-bg: #f0fdf4;
             --num-color: #94a3b8;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -176,20 +181,17 @@ def generate_html_report(
             letter-spacing: 0.4px; text-align: left; position: sticky; top: 0; z-index: 1;
         }
         th.col-num      { width: 3%;  text-align: center; }
-        th.col-question { width: 16%; }
-        th.col-gt       { width: 18%; background: #166534; }
-        th.col-gt-page  { width: 4%;  text-align: center; background: #166534; }
-        th.col-answer   { width: 34%; background: #0f3b5c; }
-        th.col-sources  { width: 16%; }
-        th.col-tokens   { width: 6%;  text-align: center; }
+        th.col-question { width: 22%; }
+        th.col-answer   { width: 32%; background: #0f3b5c; }
+        th.col-sources  { width: 14%; }
+        th.col-duration { width: 8%;  text-align: center; }
+        th.col-tokens   { width: 8%;  text-align: center; }
 
         td.col-num { text-align: center; color: var(--num-color); font-weight: 600; }
-        td.col-gt { background: var(--gt-bg); font-size: 0.88em; }
-        td.col-gt-page { background: var(--gt-bg); text-align: center; font-weight: 600; }
         td.col-answer { line-height: 1.7; }
+        td.col-duration { text-align: center; }
 
         tr:hover td { background: #fafbfc; }
-        tr:hover td.col-gt { background: #e6f7ec; }
 
         a.citation {
             color: var(--accent); text-decoration: none; font-weight: 600;
@@ -210,6 +212,11 @@ def generate_html_report(
         .no-source { color: var(--muted); font-style: italic; }
 
         td.col-tokens { text-align: center; }
+        .duration-info {
+            display: inline-block; font-weight: 600; font-size: 0.85em;
+            color: #0891b2; background: #ecfeff; padding: 2px 8px;
+            border-radius: 4px; cursor: default;
+        }
         .token-info {
             display: inline-block; font-weight: 600; font-size: 0.85em;
             color: #6366f1; background: #eef2ff; padding: 2px 8px;
@@ -261,11 +268,10 @@ def generate_html_report(
                     <tr>
                         <th class="col-num">#</th>
                         <th class="col-question">Domanda</th>
-                        <th class="col-gt">Risposta Attesa</th>
-                        <th class="col-gt-page">Pag.</th>
-                        <th class="col-answer">Risposta Modello</th>
+                        <th class="col-answer">Risposta</th>
                         <th class="col-sources">Fonti</th>
-                        <th class="col-tokens">Token</th>
+                        <th class="col-duration">Tempo di Risposta</th>
+                        <th class="col-tokens">Token Usati</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -275,12 +281,15 @@ def generate_html_report(
                     <tr class="totals-row">
                         <td class="col-num"></td>
                         <td class="col-question"></td>
-                        <td class="col-gt"></td>
-                        <td class="col-gt-page"></td>
                         <td class="col-answer" style="text-align:right;font-weight:700;color:#1e293b;">
                             TOTALE ({len(results)} domande)
                         </td>
                         <td class="col-sources"></td>
+                        <td class="col-duration">
+                            <span class="duration-info" style="color:#0f766e;background:#f0fdfa;">
+                                {tot_duration:.2f}s
+                            </span>
+                        </td>
                         <td class="col-tokens">
                             <span class="token-info token-total" title="prompt: {tot_prompt} · completion: {tot_completion}">
                                 {tot_total}

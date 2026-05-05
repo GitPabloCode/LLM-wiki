@@ -8,15 +8,15 @@ SUBSET-035 defines the **Form Fit Functional Interface Specification (FFFIS)** f
 
 ## Key points
 
-- **FFFIS scope** — Covers all protocol levels from the PROFIBUS FDL layer up through Safe Link Layer, Safe Time Layer, and Application Layer, plus physical connectors. The boundary with the trackside is the Interface 'K' antenna specification. [¶59-73]
-- **PROFIBUS physical layer** — RS-485 twisted pair at 1500 Kbps, 9-pin female D-SUB connectors. Up to 200 m per segment and 32 stations with cable type A; repeaters extend this. [¶148-167]
-- **Eight STM states** form a strict lifecycle: No Power (NP), Power On (PO), Configuration (CO), Data Entry (DE), Cold Standby (CS), Hot Standby (HS), Data Available (DA), and Failure (FA). Only one STM can be in DA (actively supervising) at a time. [¶238-274]
-- **Three safety protocol levels** (SL 0, SL 2, SL 4) per CENELEC EN 50159, allowing equipment with different Safety Integrity Levels to coexist on the same bus without the lower-SIL device masquerading as a higher-SIL one. [¶173-181]
-- **Connection management** is STM-initiated. A bidirectional version check handshake ensures compatibility: the STM sends its FFFIS STM version number, the ERTMS/ETCS on-board responds with the highest supported matching version. If incompatible, the connection is closed. [¶213-237]
-- **Functions accessible to STMs** include the STM Control Function, Reference Time, DMI (4 point-to-point channels + default window), Odometer (multicast), Train Interface (TIU commands/status), Brake Interface (BIU for emergency/service brake), and Juridical Data recorder. Access to each function varies by ETCS mode. [¶83-146]
-- **Level transitions** — Annex A provides detailed system diagrams for ETCS→NTC, NTC→ETCS, NTC X→NTC Y, and power-on scenarios, including Trip Mode and Non-Leading/Sleeping variants. [¶56-58]
-- **Version management** — The ERTMS/ETCS on-board maintains a legal backward compatibility envelope supporting older FFFIS STM versions, identified by version number X (e.g., X=4 for Baseline 3). [¶218-226]
-- **STM isolation** — An STM can be electrically isolated from the bus without disturbing bus operation for other devices. [¶81-82]
+- **FFFIS scope** — Covers all protocol levels from the PROFIBUS FDL layer up through Safe Link Layer, Safe Time Layer, and Application Layer, plus physical connectors. The boundary with the trackside is the Interface 'K' antenna specification. [¶59-73](http://localhost:8765/go.html#subset35-59)
+- **PROFIBUS physical layer** — RS-485 twisted pair at 1500 Kbps, 9-pin female D-SUB connectors. Up to 200 m per segment and 32 stations with cable type A; repeaters extend this. [¶148-167](http://localhost:8765/go.html#subset35-148)
+- **Eight STM states** form a strict lifecycle: No Power (NP), Power On (PO), Configuration (CO), Data Entry (DE), Cold Standby (CS), Hot Standby (HS), Data Available (DA), and Failure (FA). Only one STM can be in DA (actively supervising) at a time. [¶238-274](http://localhost:8765/go.html#subset35-238)
+- **Three safety protocol levels** (SL 0, SL 2, SL 4) per CENELEC EN 50159, allowing equipment with different Safety Integrity Levels to coexist on the same bus without the lower-SIL device masquerading as a higher-SIL one. [¶173-181](http://localhost:8765/go.html#subset35-173)
+- **Connection management** is STM-initiated. A bidirectional version check handshake ensures compatibility: the STM sends its FFFIS STM version number, the ERTMS/ETCS on-board responds with the highest supported matching version. If incompatible, the connection is closed. [¶213-237](http://localhost:8765/go.html#subset35-213)
+- **Functions accessible to STMs** include the STM Control Function, Reference Time, DMI (4 point-to-point channels + default window), Odometer (multicast), Train Interface (TIU commands/status), Brake Interface (BIU for emergency/service brake), and Juridical Data recorder. Access to each function varies by ETCS mode. [¶83-146](http://localhost:8765/go.html#subset35-83)
+- **Level transitions** — Annex A provides detailed system diagrams for ETCS→NTC, NTC→ETCS, NTC X→NTC Y, and power-on scenarios, including Trip Mode and Non-Leading/Sleeping variants. [¶56-58](http://localhost:8765/go.html#subset35-56)
+- **Version management** — The ERTMS/ETCS on-board maintains a legal backward compatibility envelope supporting older FFFIS STM versions, identified by version number X (e.g., X=4 for Baseline 3). [¶218-226](http://localhost:8765/go.html#subset35-218)
+- **STM isolation** — An STM can be electrically isolated from the bus without disturbing bus operation for other devices. [¶81-82](http://localhost:8765/go.html#subset35-81)
 
 ## Notable entities and concepts
 

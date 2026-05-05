@@ -6,29 +6,29 @@ The **STM Control Function** is the ERTMS/ETCS on-board component responsible fo
 
 ## Responsibilities
 
-The STM Control Function handles the following tasks, as defined in the FFFIS STM specification [¶118-130]:
+The STM Control Function handles the following tasks, as defined in the FFFIS STM specification [¶118-130](http://localhost:8765/go.html#subset35-118):
 
-- **STM state management** — controls STM state transitions and monitors the state of each connected STM. [¶119]
-- **Version compatibility** — manages the compatibility check between the ERTMS/ETCS on-board and STM FFFIS STM version numbers during connection establishment. [¶119]
-- **ETCS data transmission** — sends ETCS operational data and status data to STMs, including mode, level, and supervision information. [¶120-121]
-- **Language handling** — transmits the active display language to STMs for driver interface consistency. [¶122]
-- **NTC Data Entry/View** — manages the Specific NTC Data Entry procedure and the NTC Data View for the driver. [¶120]
-- **Override procedure** — handles the Override activation flow (by ETCS or STM), reporting it to all STMs. [¶124]
-- **Airgap data** — transmits ETCS airgap messages (received from balises/loop) to STMs so they can forward relevant information to their NTC trackside. [¶125]
-- **STM max speed and system speed/distance** — receives speed/distance constraints from STMs in HS and DA states to support smooth level transitions. [¶126]
-- **STMPanel test procedure** — handles the initiation and reporting of the STM test procedure. [¶123]
-- **Interface 'K'** — transmits the active antenna/BTM identity to STMs. [¶129]
-- **BTM alarm** — transmits BTM alarm data to STMs. [¶130]
-- **Failure display** — reports STM failure status information for display to the driver. [¶128]
-- **Bus configuration** — distributes the bus addresses and safety levels of all available ERTMS/ETCS on-board functions to STMs during startup. [¶127]
+- **STM state management** — controls STM state transitions and monitors the state of each connected STM. [¶119](http://localhost:8765/go.html#subset35-119)
+- **Version compatibility** — manages the compatibility check between the ERTMS/ETCS on-board and STM FFFIS STM version numbers during connection establishment. [¶119](http://localhost:8765/go.html#subset35-119)
+- **ETCS data transmission** — sends ETCS operational data and status data to STMs, including mode, level, and supervision information. [¶120-121](http://localhost:8765/go.html#subset35-120)
+- **Language handling** — transmits the active display language to STMs for driver interface consistency. [¶122](http://localhost:8765/go.html#subset35-122)
+- **NTC Data Entry/View** — manages the Specific NTC Data Entry procedure and the NTC Data View for the driver. [¶120](http://localhost:8765/go.html#subset35-120)
+- **Override procedure** — handles the Override activation flow (by ETCS or STM), reporting it to all STMs. [¶124](http://localhost:8765/go.html#subset35-124)
+- **Airgap data** — transmits ETCS airgap messages (received from balises/loop) to STMs so they can forward relevant information to their NTC trackside. [¶125](http://localhost:8765/go.html#subset35-125)
+- **STM max speed and system speed/distance** — receives speed/distance constraints from STMs in HS and DA states to support smooth level transitions. [¶126](http://localhost:8765/go.html#subset35-126)
+- **STMPanel test procedure** — handles the initiation and reporting of the STM test procedure. [¶123](http://localhost:8765/go.html#subset35-123)
+- **Interface 'K'** — transmits the active antenna/BTM identity to STMs. [¶129](http://localhost:8765/go.html#subset35-129)
+- **BTM alarm** — transmits BTM alarm data to STMs. [¶130](http://localhost:8765/go.html#subset35-130)
+- **Failure display** — reports STM failure status information for display to the driver. [¶128](http://localhost:8765/go.html#subset35-128)
+- **Bus configuration** — distributes the bus addresses and safety levels of all available ERTMS/ETCS on-board functions to STMs during startup. [¶127](http://localhost:8765/go.html#subset35-127)
 
 ## Physical addressing
 
-The STM Control Function uses physical PROFIBUS address 2 and SAP 100001 (binary). Each STM must establish a point-to-point connection with the STM Control Function during the Power On (PO) state. [¶190, 203, 244]
+The STM Control Function uses physical PROFIBUS address 2 and SAP 100001 (binary). Each STM must establish a point-to-point connection with the STM Control Function during the Power On (PO) state. [¶190](http://localhost:8765/go.html#subset35-190) [¶203](http://localhost:8765/go.html#subset35-203) [¶244](http://localhost:8765/go.html#subset35-244)
 
 ## Application-layer packets
 
-The following SUBSET-058 packets are managed by the STM Control Function [¶132-142]:
+The following SUBSET-058 packets are managed by the STM Control Function [¶132-142](http://localhost:8765/go.html#subset58-132):
 
 - **STM-1** — STM/ETCS function version number (bidirectional, carries N_VERMAJOR and N_VERMINOR)
 - **STM-2** — ERTMS/ETCS on-board physical addresses and safety levels for all functions (TIU, BIU, JD, DMI channels 1-4, Odometer)

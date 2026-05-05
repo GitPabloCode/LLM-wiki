@@ -2,14 +2,14 @@
 
 **Source:** [subset58](../summaries/subset58.md) | **Date:** 2026-04-29 | **Type:** concept
 
-The **Specific NTC Data Entry** procedure is a structured handshake between a Specific Transmission Module (STM) and the ERTMS/ETCS on-board's STM Control Function that allows the driver to enter national-specific operational data required by the legacy National Train Control (NTC) system. Examples include train numbers, driver IDs, route codes, or other data that ETCS does not natively handle. The procedure runs during the **Data Entry (DE)** state of the STM startup lifecycle. [¶263-268]
+The **Specific NTC Data Entry** procedure is a structured handshake between a Specific Transmission Module (STM) and the ERTMS/ETCS on-board's STM Control Function that allows the driver to enter national-specific operational data required by the legacy National Train Control (NTC) system. Examples include train numbers, driver IDs, route codes, or other data that ETCS does not natively handle. The procedure runs during the **Data Entry (DE)** state of the STM startup lifecycle. [¶263-268](http://localhost:8765/go.html#subset58-263)
 
 ## Six-packet handshake
 
-The procedure uses six dedicated application-layer packets, defined in SUBSET-058 [¶16-20]:
+The procedure uses six dedicated application-layer packets, defined in SUBSET-058 [¶16-20](http://localhost:8765/go.html#subset58-16):
 
 ### Step 1: STM declares need
-**STM-181 (Specific NTC Data Need)** — STM to STM Control Function. Sent in PO state. Indicates whether the STM requires Specific NTC Data at all. If no data is needed, the DE state is skipped and the STM proceeds directly to Cold Standby. [¶258]
+**STM-181 (Specific NTC Data Need)** — STM to STM Control Function. Sent in PO state. Indicates whether the STM requires Specific NTC Data at all. If no data is needed, the DE state is skipped and the STM proceeds directly to Cold Standby. [¶258](http://localhost:8765/go.html#subset58-258)
 
 ### Step 2: STM requests data fields
 **STM-179 (Specific NTC Data Entry request)** — STM to STM Control Function. Describes which data fields the national system needs the driver to fill in, specifying the layout, captions, and expected format of each entry.
@@ -24,11 +24,11 @@ The procedure uses six dedicated application-layer packets, defined in SUBSET-05
 **STM-183 (Specific NTC Data View values)** — STM Control Function to STM. Provides the formatted data view for the driver's confirmation on the DMI.
 
 ### Step 6: STM signals completion
-**STM-184 (Specific NTC Data Entry flag)** — STM to STM Control Function. Indicates that the data entry procedure is complete (or has been skipped/aborted). After sending this, the STM requests transition to Cold Standby (CS) state. [¶267]
+**STM-184 (Specific NTC Data Entry flag)** — STM to STM Control Function. Indicates that the data entry procedure is complete (or has been skipped/aborted). After sending this, the STM requests transition to Cold Standby (CS) state. [¶267](http://localhost:8765/go.html#subset58-267)
 
 ## Lifecycle context
 
-The DE state is entered only once per STM startup, during the initial transition from Configuration (CO) state. Once the procedure terminates — successfully or not — the STM always transitions to CS. If Specific NTC Data is invalid or the procedure is skipped, the CS state is still entered to maintain uniform system behaviour. [¶265, 268]
+The DE state is entered only once per STM startup, during the initial transition from Configuration (CO) state. Once the procedure terminates — successfully or not — the STM always transitions to CS. If Specific NTC Data is invalid or the procedure is skipped, the CS state is still entered to maintain uniform system behaviour. [¶265](http://localhost:8765/go.html#subset58-265) [¶268](http://localhost:8765/go.html#subset58-268)
 
 ## Cross-references
 - [FFFIS STM Language](fffis-stm-language.md) — the variables/packets/messages model used by these packets

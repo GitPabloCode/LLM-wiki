@@ -2,13 +2,13 @@
 
 **Source:** [subset58](../summaries/subset58.md) | **Date:** 2026-04-29 | **Type:** concept
 
-The **FFFIS STM Language** is the application-layer protocol that defines how information is structured and transmitted over the PROFIBUS between the ERTMS/ETCS on-board and Specific Transmission Modules (STMs). It is a three-level data model composed of **variables**, **packets**, and **messages**, each with precise encoding and transmission rules. [¶54-58]
+The **FFFIS STM Language** is the application-layer protocol that defines how information is structured and transmitted over the PROFIBUS between the ERTMS/ETCS on-board and Specific Transmission Modules (STMs). It is a three-level data model composed of **variables**, **packets**, and **messages**, each with precise encoding and transmission rules. [¶54-58](http://localhost:8765/go.html#subset58-54)
 
 ## Three-level hierarchy
 
 ### Variables
 
-Variables are the fundamental building blocks — single data values that cannot be split into smaller units. Each variable has a unique name and a single meaning. Encoding rules [¶60-85]:
+Variables are the fundamental building blocks — single data values that cannot be split into smaller units. Each variable has a unique name and a single meaning. Encoding rules [¶60-85](http://localhost:8765/go.html#subset58-60):
 
 - **Type prefixes** indicate semantic category: `A_` (acceleration), `D_` (distance), `V_` (speed), `M_` (miscellaneous), `N_` (number), `NC_` (class number), `NID_` (identity), `Q_` (qualifier), `T_` (time/date), `X_` (text), `L_` (length), `G_` (gradient).
 - Signed values use **2's complement** encoding.
@@ -20,7 +20,7 @@ Variables are the fundamental building blocks — single data values that cannot
 
 ### Packets
 
-Packets group multiple variables into a structured unit with a defined internal format. Every packet follows this structure [¶86-105]:
+Packets group multiple variables into a structured unit with a defined internal format. Every packet follows this structure [¶86-105](http://localhost:8765/go.html#subset58-86):
 
 ```
 NID_PACKET  (8 bits)   — Unique packet identifier
@@ -38,11 +38,11 @@ Rules:
 - **L_CAPTION** / **L_VALUE** / **L_TEXT** specify byte counts for display labels, data values, and text strings, respectively.
 - Optional variables (dependent on a preceding qualifier) are shown indented in packet definitions.
 
-Undefined packet identifiers are reserved for future use. All future packets must follow the same structure. [¶92]
+Undefined packet identifiers are reserved for future use. All future packets must follow the same structure. [¶92](http://localhost:8765/go.html#subset58-92)
 
 ### Messages
 
-A message is the complete unit of application data transmitted at a given time. Its structure [¶106-125]:
+A message is the complete unit of application data transmitted at a given time. Its structure [¶106-125](http://localhost:8765/go.html#subset58-106):
 
 ```
 NID_STM         — Identifies which STM is the sender or receiver
@@ -60,7 +60,7 @@ Rules:
 
 ## Backward compatibility
 
-Unknown (non-standard) packets received by a device are silently ignored — the message is not rejected. This allows future extensions without breaking existing equipment. [¶125]
+Unknown (non-standard) packets received by a device are silently ignored — the message is not rejected. This allows future extensions without breaking existing equipment. [¶125](http://localhost:8765/go.html#subset58-125)
 
 ## Cross-references
 - [FFFIS](fffis.md) — the specification concept this language implements at the Application Layer
