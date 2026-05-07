@@ -1,44 +1,38 @@
 # Overview
 
-## Current state
+**Date:** 2025-03-13 | **Type:** overview
 
-The wiki contains three ingested sources spanning two layers of the ERTMS/ETCS system:
+## Ingested Sources
 
-- **On-board / STM layer**: SUBSET-035 (architecture and state machine) and SUBSET-058 (Application Layer protocol) define how ERTMS/ETCS interoperates with legacy National Train Control (NTC) systems through Specific Transmission Modules (STMs).
-- **Trackside / engineering layer**: SUBSET-040 (Dimensioning and Engineering Rules) defines the mandatory physical and data-size constraints for ERTMS/ETCS infrastructure — balises, antennas, Euroloops, radio — that ensure any compliant train can operate on any compliant track.
+### SUBSET-040: ERTMS/ETCS — Class 1, Dimensioning and Engineering Rules
+Developed by UNISIG (Issue 2.3.0, 7 April 2009), this document defines mandatory **dimensioning and engineering rules** that supplement the ERTMS/ETCS System Requirements Specification. Covering balise installation, telegram/message rules, data dimensioning limits, and KER compatibility, these rules ensure interoperability across different ETCS equipment manufacturers.
 
-## Architecture picture
+### SUBSET-035: ERTMS/ETCS Specific Transmission Module FFFIS
+Developed by UNISIG (Issue 3.2.0, 2015-12-16), this document defines the **Form Fit Functional Interface Specification** for the Specific Transmission Module (STM). It covers the complete interface between ERTMS/ETCS on-board equipment and National Train Control systems across all protocol levels — from the PROFIBUS physical connector (RS-485, 1500 Kbps) up to the application layer functions. Key areas include the STM eight-state machine (NP, PO, CO, DE, CS, HS, DA, FA), the STM Control Function managing state transitions and data distribution, DMI interfaces (unified and customisable), odometer data provision, train interface and brake interface commands, juridical data recording, and version management with backward compatibility envelopes.
 
-### On-board STM subsystem
+## Key Themes
 
-The FFFIS STM establishes a **PROFIBUS-based on-board bus** where multiple STMs coexist, each representing a different national system. The ERTMS/ETCS on-board provides shared functions (DMI, odometer, train interface, brake interface, juridical recorder) that STMs access through Service Access Points (SAPs). The **STM Control Function** (physical address 2) acts as the bus coordinator, managing STM states and routing data.
+### Installation Precision (SUBSET-040)
+Multiple rules specify exact distances for balise placement relative to train front (2m–12.5m antenna offset), EOAs (≥1.3m), stopping points (≤0.7m), and train detection sections (≥13.8m).
 
-The **FFFIS STM Language** (Subset-058) defines the concrete protocol: ~120 variables with type-coded prefixes, ~30+ packet types organised by on-board function, and messages that bundle packets with NID_STM addressing and byte-aligned padding. The most complex protocol sequence is the **Specific NTC Data Entry** 6-packet handshake for entering national operational data during STM startup.
+### Data Bandwidth Management (SUBSET-040)
+Dimensioning rules limit iterations of each data element in a single packet and memorisation limits for onboard systems.
 
-### Trackside infrastructure constraints
+### Operational Safety Boundaries (SUBSET-040)
+Level transition borders, RBC handover areas, in-fill positioning rules, and advance announcement distances for track conditions (10–17 seconds).
 
-**Engineering rules** (Subset-040) form a mandatory constraint layer between the SRS and project-specific implementation. They cover three domains: **installation** (spatial relationships for balises, antennas, Euroloops), **telegrams** (content and speed-based format restrictions), and **dimensioning** (a comprehensive table of max N_ITER per packet and minimum memorised on-board for every ETCS data type — from MA sections to track conditions to linked balise groups).
+### STM State Machine and State Management (SUBSET-035)
+The eight-state STM machine (NP→PO→CO→DE→CS→HS→DA→FA) with defined transition conditions managed by the STM Control Function ensures safe and orderly activation and deactivation of National Train Control systems. Only one STM can be active at a time, and the ERTMS/ETCS on-board monitors STM safety integrity.
 
-## Key relationships
+### Interface Standardisation (SUBSET-035)
+Standardised interfaces (DMI, Train Interface, Brake Interface, Odometer, Juridical Recording) minimise the number of interfaces needed for multiple National Systems. The PROFIBUS addressing scheme maps NID_NTC values to physical addresses for automatic STM identification.
 
-- An **STM** is always associated with exactly one **NTC** (identified by NID_NTC = NID_STM).
-- Only **one STM** can be in the Data Available (DA) state at a time, meaning only one national system supervises the train.
-- **Level transitions** between ETCS and NTC (or between two NTCs) are triggered by Eurobalises — the trackside needs no additional infrastructure beyond what ETCS already requires.
-- The **DMI function** gives the active STM a dedicated "default window" on the driver's display.
-- Every STM-to-function connection starts with a **STM-1 version check** handshake (N_VERMAJOR + N_VERMINOR).
-- **Balise installation rules** (Subset-040) precisely govern where Eurobalises can be placed relative to signals, stopping points, EOA/LOA, train detection boundaries, and curves — ensuring the STM's trackside data source is physically reliable.
-- **Dimensioning limits** bridge the trackside and on-board: the trackside must not exceed a given N_ITER per packet, while the on-board must be able to store more than the per-packet maximum to accumulate data across multiple messages.
+### Version Compatibility (SUBSET-035)
+The X.Y version format with backward compatibility envelope ensures STMs can interoperate with ERTMS/ETCS on-board across different specification versions. Connection management includes version negotiation at connection setup.
 
-## Cross-source connections
-
-- Subset-058's packet catalogue maps directly to Subset-035's STM Control Function responsibilities.
-- Subset-035's level transition chapter (§7.5) is referenced by Subset-040's level transition engineering rules.
-- Subset-040 references SUBSET-035 v2.1.1 (STM FFFIS) and SUBSET-036 (Eurobalise FFFIS) as authoritative sources for the installation rules it summarises and constrains.
-- Subset-040's dimensioning table constrains the SRS (SUBSET-026) — it overrides the default N_ITER=31 where tighter limits are needed for interoperability.
-
-## Gaps
-
-- No SUBSET-026 (System Requirements Specification) — the core SRS that defines modes, levels, variables, and procedures referenced by all three ingested subsets.
-- No SUBSET-036 (Eurobalise FFFIS), SUBSET-044 (Euroloop FFFIS), SUBSET-056 (Safe Time Layer), or SUBSET-057 (Safe Link Layer) — referenced throughout the ingested subsets.
-- No real-world STM implementations or NTC-specific pages yet.
-- No comparison pages.
+## Cross-Source Connections
+- SUBSET-035 references SUBSET-026 (SRS), SUBSET-056 (Safe Time Layer), SUBSET-057 (Safe Link Layer), SUBSET-058 (Application Layer), SUBSET-034 (Train Interface), SUBSET-041 (Performance Requirements), SUBSET-101 (Interface 'K'), and ERA_ERTMS_015560 (DMI).
+- SUBSET-040 references SUBSET-026, SUBSET-036, SUBSET-091, SUBSET-035, SUBSET-044, SUBSET-054, SUBSET-100, and SUBSET-101.
+- Both documents reference SUBSET-026 (System Requirements Specification) as the foundational specification.
+- KER compatibility appears in both: SUBSET-040 addresses KER constraints for balise installation, while SUBSET-035 defines Interface 'K' antenna/BTM management for KER STMs.
+- The odometer function in SUBSET-035 references performance requirements from SUBSET-041.

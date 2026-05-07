@@ -1,35 +1,39 @@
-# Subset-035: FFFIS STM — Specific Transmission Module Interface
+# SUBSET-035: ERTMS/ETCS Specific Transmission Module FFFIS
 
-**Source:** [subset35](subset35.md) | **Date:** 2015-12-16 | **Type:** summary
+**Source:** [[subset35]] | **Date:** 2025-03-13 | **Type:** summary
 
-## Executive summary
+SUBSET-035 (Issue 3.2.0, 2015-12-16) defines the **Form Fit Functional Interface Specification (FFFIS)** for the **Specific Transmission Module (STM)** — the interface between ERTMS/ETCS on-board equipment and National Train Control (NTC) systems. Developed by UNISIG [¶0–¶7], its objective is to enable any ERTMS/ETCS on-board to connect to any STM, ensuring interchangeability [¶66](http://localhost:8765/go.html#subset35-66).
 
-SUBSET-035 defines the **Form Fit Functional Interface Specification (FFFIS)** for the **Specific Transmission Module (STM)**, the component that allows the ERTMS/ETCS on-board equipment to interoperate with legacy **National Train Control (NTC)** systems. Issue 3.2.0 (Baseline 3, 2nd release) is a UNISIG document approved by Alstom, Ansaldo, AZD, Bombardier, CAF, Siemens, and Thales. The specification covers everything from the physical connector to the application-layer protocols, ensuring that any STM can connect to any compliant ERTMS/ETCS on-board and that level transitions between ETCS and national systems are seamless — requiring only Eurobalises as trackside markers.
+The document covers all protocol levels from the PROFIBUS physical connector up to the application layer functions [¶63–¶65].
 
-## Key points
+## Key Areas
 
-- **FFFIS scope** — Covers all protocol levels from the PROFIBUS FDL layer up through Safe Link Layer, Safe Time Layer, and Application Layer, plus physical connectors. The boundary with the trackside is the Interface 'K' antenna specification. [¶59-73](http://localhost:8765/go.html#subset35-59)
-- **PROFIBUS physical layer** — RS-485 twisted pair at 1500 Kbps, 9-pin female D-SUB connectors. Up to 200 m per segment and 32 stations with cable type A; repeaters extend this. [¶148-167](http://localhost:8765/go.html#subset35-148)
-- **Eight STM states** form a strict lifecycle: No Power (NP), Power On (PO), Configuration (CO), Data Entry (DE), Cold Standby (CS), Hot Standby (HS), Data Available (DA), and Failure (FA). Only one STM can be in DA (actively supervising) at a time. [¶238-274](http://localhost:8765/go.html#subset35-238)
-- **Three safety protocol levels** (SL 0, SL 2, SL 4) per CENELEC EN 50159, allowing equipment with different Safety Integrity Levels to coexist on the same bus without the lower-SIL device masquerading as a higher-SIL one. [¶173-181](http://localhost:8765/go.html#subset35-173)
-- **Connection management** is STM-initiated. A bidirectional version check handshake ensures compatibility: the STM sends its FFFIS STM version number, the ERTMS/ETCS on-board responds with the highest supported matching version. If incompatible, the connection is closed. [¶213-237](http://localhost:8765/go.html#subset35-213)
-- **Functions accessible to STMs** include the STM Control Function, Reference Time, DMI (4 point-to-point channels + default window), Odometer (multicast), Train Interface (TIU commands/status), Brake Interface (BIU for emergency/service brake), and Juridical Data recorder. Access to each function varies by ETCS mode. [¶83-146](http://localhost:8765/go.html#subset35-83)
-- **Level transitions** — Annex A provides detailed system diagrams for ETCS→NTC, NTC→ETCS, NTC X→NTC Y, and power-on scenarios, including Trip Mode and Non-Leading/Sleeping variants. [¶56-58](http://localhost:8765/go.html#subset35-56)
-- **Version management** — The ERTMS/ETCS on-board maintains a legal backward compatibility envelope supporting older FFFIS STM versions, identified by version number X (e.g., X=4 for Baseline 3). [¶218-226](http://localhost:8765/go.html#subset35-218)
-- **STM isolation** — An STM can be electrically isolated from the bus without disturbing bus operation for other devices. [¶81-82](http://localhost:8765/go.html#subset35-81)
-
-## Notable entities and concepts
-
-### Entities
-- [STM (Specific Transmission Module)](../entities/stm.md) — The device that adapts a national train protection system to the ERTMS/ETCS on-board via the FFFIS STM interface.
-- [NTC (National Train Control)](../entities/ntc.md) — A legacy national train protection system operating alongside or under ETCS.
-- [STM Control Function](../entities/stm-control-function.md) — The ERTMS/ETCS on-board function responsible for managing STM states, version compatibility, and data routing between ETCS and STMs.
-
-### Concepts
-- [FFFIS (Form Fit Functional Interface Specification)](../concepts/fffis.md) — The specification philosophy covering all protocol levels, connectors, and physical form factors for interchangeable equipment.
-- [STM States](../concepts/stm-states.md) — The eight-state lifecycle governing how an STM boots, configures, enters standby, and takes over train supervision.
-- [STM Version Check](../concepts/stm-version-check.md) — The bidirectional handshake protocol that ensures FFFIS STM version compatibility before application data is exchanged.
+- **Functional Architecture** — STM communicates with: DMI, STM Control Function, Reference Time, Brake Interface (BIU), Train Interface (TIU), Juridical Data, and Odometer [¶85–¶96].
+- **PROFIBUS Bus** — Physical layer using RS-485, 1500 Kbps, 9-pin D-SUB connector, addressing scheme mapping NID_NTC to PROFIBUS addresses [¶149–§192].
+- **Safety Protocol Levels** — Three levels: SL4, SL2, SL0, mapped to equipment SIL [¶174–§181].
+- **STM States** — Eight states: NP (No Power), PO (Power On), CO (Configuration), DE (Data Entry), CS (Cold Standby), HS (Hot Standby), DA (Data Available), FA (Failure) [¶239–§286].
+- **STM Control Function** — Manages state transitions, association of STM X to Level NTC X, ETCS data distribution, Specific NTC Data Entry/View, Test Procedure, Override, airgap messages, speed/distance supervision, Interface 'K' antenna management, BTM alarm data [¶312–§549].
+- **Train Interface (TIU)** — Command and status signals for regenerative brake, magnetic shoe brake, eddy current brake, pantograph, air tightness, main switch, traction cut off [¶101–§111].
+- **Brake Interface (BIU)** — Emergency and service brake commands and status, physically separated with different safety levels [¶112–§115].
+- **Odometer** — Speed/distance estimation with confidence intervals, min/max ranges [¶561–§598].
+- **DMI** — Driver-Machine Interface for national system interaction: text messages, indicators, buttons, sounds, supervision information, with unified and customisable services [¶600–§753].
+- **Version Management** — Format X.Y (0-255); X distinguishes incompatible versions, Y indicates compatibility within X; backward compatibility envelope [¶776–§796].
+- **Connection Management** — Version check on connection; STM initiates; compatibility rules for version negotiation [¶215–§237].
 
 ## Cross-references
-- [subset35](subset35.md) — this page itself
-- [index](../index.md) — wiki catalog
+- [[STM]] — the Specific Transmission Module entity
+- [[STM Control Function]] — manages STM state and data exchange
+- [[STM Manager System]] — state handling and transitions
+- [[STM States]] — the eight-state machine (NP, PO, CO, DE, CS, HS, DA, FA)
+- [[PROFIBUS]] — the physical bus interface
+- [[Odometer Function]] — speed/distance estimation interface
+- [[Train Interface Unit]] — train command/status signals
+- [[Brake Interface Unit]] — emergency/service brake commands
+- [[Juridical Data Recording]] — national recording interface
+- [[DMI STM]] — DMI interface for STM
+- [[STM Connection Management]] — version check and connection setup
+- [[STM Version Management]] — X.Y version format and compatibility
+- [[Specific NTC Data Entry]] — national data entry procedure
+- [[STM Safety Protocols]] — SL4, SL2, SL0 safety levels
+- [[STM Customisable DMI Service]] — configurable DMI layouts
+- [[subset40]] — related dimensioning and engineering rules

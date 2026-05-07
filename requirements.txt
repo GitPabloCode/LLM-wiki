@@ -1,12 +1,3 @@
-pandas
-datapizza-ai
-datapizza-ai-clients-openai-like
-python-dotenv
-litellm
-RestrictedPython
-docling
-docling-core
-pillow
-fpdf2
-openpyxl
-requests
+datapizza-ai>=0.1.0
+python-dotenv>=1.0.0
+tiktoken>=0.5.0

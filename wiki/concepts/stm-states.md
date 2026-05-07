@@ -1,42 +1,41 @@
 # STM States
 
-**Source:** [subset35](../summaries/subset35.md) | **Date:** 2026-04-29 | **Type:** concept
+**Source:** [[subset35]] | **Date:** 2025-03-13 | **Type:** concept
 
-The **STM states** define the lifecycle of a Specific Transmission Module from power-off to active train supervision. The ERTMS/ETCS on-board's STM Control Function manages state transitions and enforces the rule that only one STM can be in the Data Available (DA) state at a time. The eight states form a mostly linear progression with the Failure (FA) state reachable from any other state. [¶238-274](http://localhost:8765/go.html#subset35-238)
+The **STM States** define the eight operational states of a Specific Transmission Module. The STM Manager System within the STM Control Function manages transitions between these states [¶288–§290].
 
-## The eight states
+## State Definitions
 
 ### NP — No Power
-The STM is unpowered. No communication is possible. This is the initial and terminal state (before startup and after shutdown). [¶239-240](http://localhost:8765/go.html#subset35-239)
+STM is unpowered. No communication possible [¶239–§240].
 
 ### PO — Power On
-Default state entered after power-up. The STM synchronises the Safe Time Layer and establishes a connection to the STM Control Function. Once the STM Control Function sends ETCS status data, the STM may request CO state. The STM also indicates whether it requires Specific NTC Data. [¶241-247](http://localhost:8765/go.html#subset35-241)
+Default state after switch-on. STM synchronises Safe Time Layer, establishes connection with STM Control Function, and sends "Specific NTC Data Need" if required. After receiving bus addresses/safety levels, it may establish further connections. After ETCS status data, it may request CO state [¶241–§247].
 
 ### CO — Configuration
-The STM waits for all configuration data from the ERTMS/ETCS on-board: ETCS data, TIU and BIU status/availability, odometer performance parameters, and brake performance parameters. Once complete, the STM either transitions to Data Entry (DE) if it needs Specific NTC Data, or directly to Cold Standby (CS) if it does not. [¶248-262](http://localhost:8765/go.html#subset35-248)
+STM waits for exchange of configuration data: ETCS data, TIU status/availability, BIU status/availability, odometer performance parameters, brake performance parameters [¶248–§257]. If no Specific NTC Data is needed → requests CS; if in NL/SL mode → requests CS even without all ETCS data; if data is needed → requests DE [¶258–§262].
 
 ### DE — Data Entry
-Entered only once at startup by STMs that require Specific NTC Data. The Specific NTC Data Entry procedure runs, enabling the driver to input national operational data. Once complete (or skipped), the STM requests Cold Standby state. [¶263-268](http://localhost:8765/go.html#subset35-263)
+For STMs requiring Specific NTC Data for operation. Performed only once at start-up. When terminated → requests CS (even if data not received/skipped/invalid) [¶263–§268].
 
 ### CS — Cold Standby
-The STM is initialised, configured, and in possession of all required information, but its trackside reception is turned off. It is prepared but not yet processing national trackside messages. [¶269-271](http://localhost:8765/go.html#subset35-269)
+STM is initialised, tested, and configured but not processing trackside information. Reception is off [¶269–§271].
 
 ### HS — Hot Standby
-The STM is actively processing national trackside information and is prepared to take over supervision. It can send STM max speed and STM system speed/distance to the ERTMS/ETCS on-board to facilitate smooth level transitions. Multiple STMs can be in HS simultaneously. [¶272-278](http://localhost:8765/go.html#subset35-272)
+STM processes trackside information to be ready for supervision. Can send V_STMMAX, V_STMSYS, D_STMSYS for smooth transitions. May close connections except STM Control when ordered to CS [¶272–§280].
 
 ### DA — Data Available
-The STM is actively supervising the train. Only one STM can be in this state. The STM has full access to DMI, TIU commands, and BIU commands. The ERTMS/ETCS on-board monitors the active STM's safety integrity and applies the emergency brake on failure. [¶78-79](http://localhost:8765/go.html#subset35-78)
+STM is responsible for train movement supervision per national trackside information. This is the fully active state [¶281–§283].
 
 ### FA — Failure
-The STM has detected a failure. It can no longer supervise the train. Reachable from any other state. [¶274](http://localhost:8765/go.html#subset35-274)
+STM is unable to work. No messages except state report are sent [¶284–§286].
 
-## State transitions
+## Transitions
 
-States follow a defined transition order managed by the STM Control Function. Transitions are requested by the STM and authorised by the Control Function based on the current state and received data. [¶119](http://localhost:8765/go.html#subset35-119) [¶248-278](http://localhost:8765/go.html#subset35-248)
+State transitions are triggered by ETCS orders (Configuration, Data Entry, Cold Standby, Hot Standby, Data Available, Failure) or STM decisions. The STM Control Function manages these transitions based on current conditions [¶291–§297].
 
 ## Cross-references
-- [STM](../entities/stm.md) — the device whose lifecycle these states govern
-- [STM Control Function](../entities/stm-control-function.md) — the function that manages state transitions
-- [FFFIS](fffis.md) — the specification concept defining this state machine
-- [STM Version Check](stm-version-check.md) — the version negotiation that runs during PO and CO transitions
-- [subset35](../summaries/subset35.md) — the FFFIS STM specification
+- [[Specific Transmission Module (STM)]] — entity that uses these states
+- [[STM Control Function]] — manages state transitions
+- [[STM Manager System]] — handles state orders and reports
+- [[subset35]] — source document
