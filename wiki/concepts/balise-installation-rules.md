@@ -1,37 +1,37 @@
 # Balise Installation Rules
 
-**Source:** [[subset40]] | **Date:** 2026-05-07 | **Type:** concept
+**Source:** [[subset40]] | **Date:** 2025-07-17 | **Type:** concept
 
-This page collects all the installation constraints for balises from SUBSET-040 §4.1.1.
+This page captures the engineering rules for physical installation of Eurobalises on the trackside, as defined in SUBSET-040 Section 4.1.1. [subset40 ¶57]
 
-## General Installation
+## Reference Point Conventions
 
-Must respect SUBSET-036 §4.2.5 (cross-talk), §5.2 (air gap), §5.6.2 (installation requirements), §5.6.3 (distance between balises), and §5.7 (environmental) [¶59](http://localhost:8765/go.html#subset40-59).
+Balises are referenced by their Balise Reference Marks — visible signs on the balise surface. [subset40 ¶41]
 
-## Distances
+## Distance Rules
 
-| Rule | Value | Reference |
+| Rule | Value | Purpose |
 |---|---|---|
-| Max distance within a group | ≤ **12 m** between reference marks | [¶61](http://localhost:8765/go.html#subset40-61) |
-| Max distance from signal with switched info to stopping point (Level 1) | ≤ **0.7 m** in rear | [¶63](http://localhost:8765/go.html#subset40-63) |
-| Min distance from balise group to EOA (Level 1) | ≥ **1.3 m** in rear | [¶65](http://localhost:8765/go.html#subset40-65) |
-| Min distance from last switchable balise to limit of train detection section (Level 1) | ≥ **13.8 m** in rear | [¶67](http://localhost:8765/go.html#subset40-67) |
+| Max distance between balises in a group | 12m | Early detection of missing balises [subset40 ¶61] |
+| Balise at signal to stopping point (Level 1) | ≤0.7m in rear | Prevent stopped train from reading forward balises [subset40 ¶63] |
+| Last MA-giving balise to EOA/LOA (Level 1) | ≥1.3m in rear | Ensure all MA info received before EOA passed [subset40 ¶65] |
+| Last switchable balise to train detection limit (Level 1) | ≥13.8m in rear | Avoid reading balise of block n while detected in block n+1 [subset40 ¶67] |
+| Minimum curve radius for balise placement | 300m recommended | Ensure reliable antenna-to-balise transmission [subset40 ¶74] |
 
-## Processing Limit
+## Processing Capacity
 
-Number of balises encountered in the distance **d** travelled at max line speed during **0.8 s** shall not exceed **8** [¶69](http://localhost:8765/go.html#subset40-69).
+No more than 8 balises may be encountered within the distance 'd' travelled at max line speed in 0.8 seconds. This accounts for onboard processing limitations per SUBSET-036 Section 4.2.9. [subset40 ¶69]
 
-## Lateral/Angular Tolerances
+## In-fill Location
 
-Minimum curve radius recommended >**300 m**; lower values require detailed analysis [¶74-¶75]. Very low radius curves require verification that transmission is guaranteed [¶80](http://localhost:8765/go.html#subset40-80).
+The in-fill device's location reference must be in rear of the current EOA, because MA extension via in-fill is only possible when there is no gap between the old MA and the MA extension. [subset40 ¶84]
 
-## Group Configurations
+## Lateral and Angular Tolerances
 
-Must respect SUBSET-091 §8.3.2.1 (number of balises per group, single groups, TSR groups) [¶82](http://localhost:8765/go.html#subset40-82).
+Installation must respect SUBSET-036 Sections 5.2.2.5 and 5.6.2.3 for lateral and angular tolerances. The minimum recommended curve radius is 300m; lower values require detailed analysis of antenna lateral deviation. [subset40 ¶74][subset40 ¶77]
 
-## Cross-references
-- [[Balise]] — the device being installed
-- [[Balise Group]] — grouping rules
-- [[Eurobalise Antenna]] — antenna dimensions used in distance calculations
-- [[EOA]] — reference location for distance rules
-- [[subset40]] — source document
+## Cross-References
+- [[eurobalise]] — The physical balise device
+- [[eurobalise-antenna]] — Onboard antenna considerations
+- [[balise-group]] — Group configuration rules
+- [[subset40]] — Full engineering rule document

@@ -1,27 +1,42 @@
 # Eurobalise Antenna
 
-**Source:** [[subset40]] | **Date:** 2026-05-07 | **Type:** entity
+**Source:** [[subset40]] | **Date:** 2025-07-17 | **Type:** entity
 
-The **Eurobalise antenna** is the onboard device mounted on the train that reads telegrams transmitted by trackside balises.
+The Eurobalise Antenna is the onboard device mounted beneath the train that communicates with trackside Eurobalises. It energises passive balises and receives telegrams. [subset40 ¶48]
 
 ## Reference Location
 
-The antenna's reference location is the **Antenna Reference Marks** — visible signs on the train surface [¶48](http://localhost:8765/go.html#subset40-48).
+The reference location of an antenna is its Antenna Reference Marks — visible signs on the surface of the antenna body. [subset40 ¶48]
 
-## Installation Rules (§4.1.2)
+## Positioning Rules
 
-- General installation must respect SUBSET-036 §§5.2, 6.5, 6.6, 6.7 [¶89](http://localhost:8765/go.html#subset40-89).
-- **Minimum distance from front of engine/1st axle to antenna**: **2 m** [¶92](http://localhost:8765/go.html#subset40-92).
-- **Maximum distance from front of engine/1st axle to antenna**: **12.5 m** [¶92](http://localhost:8765/go.html#subset40-92).
-- Interference with other systems (e.g., KER) must be considered [¶92](http://localhost:8765/go.html#subset40-92).
+**Distance from train front and first axle:** [subset40 ¶90][subset40 ¶92]
 
-## Role in Distance Calculations
+| Parameter | Value |
+|---|---|
+| Minimum distance from train front | 2m |
+| Maximum distance from train front | 12.5m |
 
-The antenna-to-front distance (2m minimum, 12.5m maximum) is used in multiple engineering rules:
-- 0.7 m balise-to-stopping-point rule uses 2 m antenna-to-front + 1.3 m side lobe zone [¶63](http://localhost:8765/go.html#subset40-63).
-- 13.8 m balise-to-detection-section rule uses 12.5 m antenna-to-1st-axle + 1.3 m side lobe [¶67](http://localhost:8765/go.html#subset40-67).
+The minimum 2m distance prevents an antenna from receiving a telegram from a balise energised by another antenna, and prevents a balise energised by one antenna from perturbing an adjacent antenna's transmission. [subset40 ¶92]
 
-## Cross-references
-- [[Balise]] — the trackside device the antenna reads from
-- [[Balise Installation Rules]] — installation rules referencing antenna dimensions
-- [[subset40]] — source document
+The maximum 12.5m allows the same antenna to be used for both directions on a locomotive and provides sufficient space for installation on all train types. [subset40 ¶92]
+
+**Interference with other systems:** Interference with antennas of other systems (especially KER-based) must be considered. [subset40 ¶92]
+
+## Installation Requirements
+
+Installation must follow the FFFIS for Eurobalise (SUBSET-036) specifications for: [subset40 ¶89]
+- Balise air gap interface (Section 5.2)
+- Antenna installation requirements (Section 6.5)
+- Specific environmental conditions (Section 6.6)
+- Specific EMC requirements (Section 6.7)
+
+## Lateral Deviation in Curves
+
+Differences in antenna mounting on different train types generate varying lateral deviations in curves, in addition to dynamic deviations. The effects depend on train speed, distance between bogies, and antenna location. In curves with radius < 300m, detailed analysis is needed to ensure reliable transmission. [subset40 ¶78][subset40 ¶79]
+
+## Cross-References
+- [[eurobalise]] — The trackside balise the antenna communicates with
+- [[balise-installation-rules]] — Installation rules for the trackside balise
+- [[ker-compatibility]] — KER interference considerations
+- [[subset40]] — Full engineering rule document

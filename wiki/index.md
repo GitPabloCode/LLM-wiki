@@ -1,40 +1,36 @@
 # Wiki Index
 
-*Last updated: 2026-05-07*
+*Last updated: 2025-07-17*
 
 ## Summaries
-- [SUBSET-035: ERTMS/ETCS Specific Transmission Module FFFIS](summaries/subset35.md) — Form Fit Functional Interface Specification for the Specific Transmission Module, covering PROFIBUS, STM states, control function, DMI, odometer, TIU, BIU, juridical data, and version management | 2025-03-13
-- [SUBSET-040: ERTMS/ETCS — Class 1, Dimensioning and Engineering Rules](summaries/subset40.md) — Dimensioning and engineering rules for ERTMS/ETCS Class 1, covering balise installation, telegrams, messages, and data dimensioning | 2026-05-07
+- [subset40](summaries/subset40.md) — ERTMS/ETCS Dimensioning and Engineering Rules — installation rules, telegram/message rules, and message dimensioning for interoperability | 2025-07-17
+- [SUBSET-058](summaries/subset58.md) — FFFIS STM Application Layer — variables, packets, and messages for STM/ETCS communication | 2025-07-17
+- [SUBSET-035](summaries/subset35.md) — FFFIS STM — interface specification between ERTMS/ETCS on-board and National Train Control systems via Specific Transmission Module | 2025-07-17
 
 ## Entities
-- [DMI STM Interface](entities/dmi-stm.md) — Driver-Machine Interface for STM national system interaction with unified and customisable services | sources: subset35
-- [Juridical Data Recording](entities/juridical-data-recording.md) — National juridical data forwarding from STM to On-Board Recording Device | sources: subset35
-- [Brake Interface Unit (BIU)](entities/brake-interface-unit.md) — Emergency and service brake command/status interface for STMs | sources: subset35
-- [Train Interface Unit (TIU)](entities/train-interface-unit.md) — Train command/status signal interface for STMs (brakes, pantograph, traction) | sources: subset35
-- [Odometer Function](entities/odometer-function.md) — On-board function providing speed/distance estimation with confidence intervals to STMs | sources: subset35
-- [PROFIBUS (STM Interface)](entities/profibus-stm.md) — Physical communication bus (RS-485) with addressing and SAPs for STM interface | sources: subset35
-- [STM Manager System](entities/stm-manager-system.md) — Subsystem handling STM state transitions between the eight operational states | sources: subset35
-- [STM Control Function](entities/stm-control-function.md) — On-board function managing STM state, data distribution, and communication | sources: subset35
-- [Specific Transmission Module (STM)](entities/stm.md) — Interface component connecting ERTMS/ETCS on-board to National Train Control systems | sources: subset35
-- [RBC (Radio Block Centre)](entities/rbc.md) — Trackside RBC with handover and message size rules | sources: subset40
-- [Euroloop](entities/euroloop.md) — Continuous trackside transmission system | sources: subset40
-- [Eurobalise Antenna](entities/eurobalise-antenna.md) — Onboard antenna with front-to-antenna distance constraints | sources: subset40
-- [Balise Group](entities/balise-group.md) — Grouped balises with spacing and reference location rules | sources: subset40
-- [Balise](entities/balise.md) — Trackside transmission device with installation and telegram rules | sources: subset40
+- [euroloop](entities/euroloop.md) — Loop-based transmission system for continuous/semi-continuous communication | sources: subset40
+- [balise-group](entities/balise-group.md) — Group of Eurobalises treated as a complete device for ERTMS messaging | sources: subset40
+- [eurobalise-antenna](entities/eurobalise-antenna.md) — Onboard antenna communicating with trackside Eurobalises | sources: subset40
+- [eurobalise](entities/eurobalise.md) — Trackside transponder for transmitting telegrams to passing trains | sources: subset40
+- [STM](entities/stm.md) — Interface component connecting legacy NTC systems to ERTMS/ETCS on-board | sources: subset35, subset58
+- [PROFIBUS](entities/profibus.md) — Communication bus (RS-485, 1500 Kbps) used for STM to ERTMS/ETCS on-board interface | sources: subset35
+- [Juridical Data Function](entities/juridical-data-function.md) — Forwards national juridical data to recording devices | sources: subset35, subset58
+- [Odometer Function](entities/odometer-function.md) — Provides speed/distance estimates to all STMs | sources: subset35, subset58
+- [BIU Function](entities/biu-function.md) — Brake Interface Unit for emergency/service brake control | sources: subset35, subset58
+- [TIU Function](entities/tiu-function.md) — Train Interface Unit for train command/status signals | sources: subset35, subset58
+- [DMI Function](entities/dmi-function.md) — Driver Machine Interface for STM-driver interaction via default window | sources: subset35, subset58
+- [STM Control Function](entities/stm-control-function.md) — Central manager for STM state transitions, version compatibility, data forwarding | sources: subset35, subset58
 
 ## Concepts
-- [STM Customisable DMI Service](concepts/stm-customisable-dmi-service.md) — Configurable DMI layouts, icons, sounds, and indicator/button arrangements for STM | sources: subset35
-- [Specific NTC Data Entry](concepts/specific-ntc-data-entry.md) — Driver entry procedure for national system data required by STM | sources: subset35
-- [STM Version Management](concepts/stm-version-management.md) — X.Y version numbering scheme for FFFIS STM with backward compatibility envelope | sources: subset35
-- [STM Connection Management](concepts/stm-connection-management.md) — Version check and connection establishment procedure between STM and ERTMS/ETCS on-board | sources: subset35
-- [STM Safety Protocols](concepts/stm-safety-protocols.md) — SL4, SL2, SL0 safety protocol levels for STM communication | sources: subset35
-- [STM States](concepts/stm-states.md) — Eight operational states of an STM: NP, PO, CO, DE, CS, HS, DA, FA | sources: subset35
-- [Balise Installation Rules](concepts/balise-installation-rules.md) — Comprehensive installation distance and tolerance rules for balises | sources: subset40
-- [KER Compatibility](concepts/ker-compatibility.md) — Additional requirements for KER-compatible transmission systems | sources: subset40
-- [Message Dimensioning](concepts/message-dimensioning.md) — Size constraints on balise telegrams and radio messages | sources: subset40
-- [Data Dimensioning](concepts/data-dimensioning.md) — Iteration and memorisation limits for all ETCS data elements | sources: subset40
-- [Track Conditions](concepts/track-conditions.md) — Advance announcement distances for special track features | sources: subset40
-- [Linking](concepts/linking.md) — Expected balise group sequence verification mechanism | sources: subset40
-- [In-fill](concepts/in-fill.md) — Supplementary MA update via balise, loop, or radio | sources: subset40
-- [Level Transition](concepts/level-transition.md) — Rules for transitions between ETCS operational levels | sources: subset40
-- [EOA (End of Authority)](concepts/eoa.md) — Reference location for train movement authorisation | sources: subset40
+- [ker-compatibility](concepts/ker-compatibility.md) — Additional requirements for equipment offering KER (German legacy system) compatibility | sources: subset40
+- [dimensioning-rules](concepts/dimensioning-rules.md) — Maximum iterations per packet and minimum onboard memory requirements | sources: subset40
+- [data-engineering-rules](concepts/data-engineering-rules.md) — Content constraints for data types in balise telegrams and radio messages | sources: subset40
+- [balise-installation-rules](concepts/balise-installation-rules.md) — Physical installation distance and positioning rules for trackside balises | sources: subset40
+- [STM States](concepts/stm-states.md) — Eight-state lifecycle: NP → PO → CO → DE → CS → HS → DA → FA | sources: subset35, subset58
+- [FFFIS STM Application Layer](concepts/fffis-stm-application-layer.md) — Three-level protocol structure (variables, packets, messages) for FFFIS STM | sources: subset58
+- [STM Level Transitions](concepts/stm-level-transitions.md) — Seamless transitions between ETCS and NTC levels via Eurobalises | sources: subset35, subset58
+- [Override Procedure](concepts/override-procedure.md) — Coordinated trip inhibition override between ETCS and STM | sources: subset35, subset58
+- [Customisable DMI Service](concepts/customisable-dmi.md) — Configurable cell-based DMI layout service for STMs with custom indicator/button/icon/sound definitions | sources: subset35
+- [Specific NTC Data Entry](concepts/specific-ntc-data-entry.md) — Procedure for driver entry of national data for STMs | sources: subset35, subset58
+- [FFFIS STM Version Management](concepts/fffis-stm-version-management.md) — Version numbering scheme (X.Y format) and legal backward compatibility envelope for FFFIS STM | sources: subset35
+- [Connection Management](concepts/connection-management.md) — Rules for opening, version-checking, maintaining, and closing STM-to-ETCS connections over PROFIBUS | sources: subset35

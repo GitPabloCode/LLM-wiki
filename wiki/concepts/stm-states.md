@@ -1,41 +1,43 @@
 # STM States
 
-**Source:** [[subset35]] | **Date:** 2025-03-13 | **Type:** concept
+**Source:** [[subset35]], [[subset58]] | **Date:** 2025-07-17 | **Type:** concept
 
-The **STM States** define the eight operational states of a Specific Transmission Module. The STM Manager System within the STM Control Function manages transitions between these states [¶288–§290].
+The STM operates in one of eight states, managed by the [[stm-control-function]]. The states define the STM's lifecycle from power-on through active supervision.
 
 ## State Definitions
 
-### NP — No Power
-STM is unpowered. No communication possible [¶239–§240].
+| State | Code | Description |
+|-------|------|-------------|
+| No Power | NP | STM is unpowered [subset58 ¶240] |
+| Power On | PO | Default state after switch-on; performs Safe Time Layer synchronisation and establishes connection to STM Control Function [subset58 ¶242]-[subset58 ¶247] |
+| Configuration | CO | Waiting for all configuration data to be exchanged (ETCS data, TIU/BIU status, odometer/brake parameters) [subset58 ¶249]-[subset58 ¶262] |
+| Data Entry | DE | Used by STMs requiring Specific NTC Data from the driver [subset58 ¶264]-[§268] |
+| Cold Standby | CS | Initialised, configured, and in possession of all required information but trackside reception is turned off [subset58 ¶270] |
+| Hot Standby | HS | Can process information from/to national trackside, can send STM max speed and system speed/distance [subset58 ¶273]-[§280] |
+| Data Available | DA | STM is responsible for train movement supervision [subset58 ¶282] |
+| Failure | FA | STM cannot work due to internal or external reasons; must not send messages on the bus except to report FA state [subset58 ¶285]-[§286] |
 
-### PO — Power On
-Default state after switch-on. STM synchronises Safe Time Layer, establishes connection with STM Control Function, and sends "Specific NTC Data Need" if required. After receiving bus addresses/safety levels, it may establish further connections. After ETCS status data, it may request CO state [¶241–§247].
+## Application Layer Representation (SUBSET-058)
 
-### CO — Configuration
-STM waits for exchange of configuration data: ETCS data, TIU status/availability, BIU status/availability, odometer performance parameters, brake performance parameters [¶248–§257]. If no Specific NTC Data is needed → requests CS; if in NL/SL mode → requests CS even without all ETCS data; if data is needed → requests DE [¶258–§262].
+Three variables encode state information in packets [subset58 ¶380]-[subset58 ¶385]:
 
-### DE — Data Entry
-For STMs requiring Specific NTC Data for operation. Performed only once at start-up. When terminated → requests CS (even if data not received/skipped/invalid) [¶263–§268].
+- **NID_STMSTATE** (4 bits): Current STM state reported by the STM. Values: 0=reserved, 1=PO, 2=CO, 3=DE, 4=CS, 5=reserved(→CS), 6=HS, 7=DA, 8=FA, 9-15=spare. [subset58 ¶380]-[subset58 ¶381]
+- **NID_STMSTATEORDER** (4 bits): State ordered by ERTMS/ETCS on-board. Values: 0=reserved, 1=reserved, 2=CO, 3=DE, 4=U-CS, 5=C-CS, 6=HS, 7=DA, 8=FA, 9-15=spare. [subset58 ¶382]-[subset58 ¶383]
+- **NID_STMSTATEREQUEST** (4 bits): State requested by the STM. Values: 0=reserved, 1=reserved, 2=CO, 3=DE, 4=CS, 5=reserved(→CS), 6-8=reserved, 9-15=spare. [subset58 ¶384]-[subset58 ¶385]
 
-### CS — Cold Standby
-STM is initialised, tested, and configured but not processing trackside information. Reception is off [¶269–§271].
+## State Transitions
 
-### HS — Hot Standby
-STM processes trackside information to be ready for supervision. Can send V_STMMAX, V_STMSYS, D_STMSYS for smooth transitions. May close connections except STM Control when ordered to CS [¶272–§280].
+The STM transitions through states in a defined order: NP → PO → CO → (DE →) CS → HS → DA. Transitions are triggered by STM-14 (state order) or STM-13 (state request) packets. Invalid transition orders cause the STM to enter FA state [subset58 ¶303].
 
-### DA — Data Available
-STM is responsible for train movement supervision per national trackside information. This is the fully active state [¶281–§283].
+## Key Rules
 
-### FA — Failure
-STM is unable to work. No messages except state report are sent [¶284–§286].
-
-## Transitions
-
-State transitions are triggered by ETCS orders (Configuration, Data Entry, Cold Standby, Hot Standby, Data Available, Failure) or STM decisions. The STM Control Function manages these transitions based on current conditions [¶291–§297].
+- Only one STM can be active (in DA state) at a time [subset58 ¶78]
+- The STM reports its NID_STM and current state with every application message [subset58 ¶304]-[subset58 ¶307]
+- FA state is reported if possible; the STM may be unable to report due to the failure itself [subset58 ¶310]
+- Packet sending permissions vary by state (specified for each packet definition in SUBSET-058)
 
 ## Cross-references
-- [[Specific Transmission Module (STM)]] — entity that uses these states
-- [[STM Control Function]] — manages state transitions
-- [[STM Manager System]] — handles state orders and reports
-- [[subset35]] — source document
+- [[stm]] — The Specific Transmission Module entity
+- [[stm-control-function]] — Manages STM states and transitions
+- [[connection-management]] — Connection opening and closing
+- [[fffis-stm-application-layer]] — Application Layer protocol

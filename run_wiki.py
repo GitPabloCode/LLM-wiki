@@ -23,8 +23,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from agents.config import WikiConfig
-from agents.ingest_agent import IngestAgent
-from agents.query_agent import QueryAgent
 from agents.orchestrator import OrchestratorAgent
 
 
@@ -127,23 +125,9 @@ def main():
     # Start citation server
     start_citation_server()
 
-    # Build agents
-    print("[ok] Initializing Ingest Agent...")
-    ingest_agent = IngestAgent(config)
-
-    print("[ok] Initializing Query Agent...")
-    query_agent = QueryAgent(config)
-
-    # For now, Lint agent is not available
-    lint_agent = None
-
     print("[ok] Starting Orchestrator...")
     orchestrator = OrchestratorAgent(config)
-    orchestrator.start(
-        ingest_agent=ingest_agent,
-        query_agent=query_agent,
-        lint_agent=lint_agent,
-    )
+    orchestrator.start()
 
     print("\nChat with the Orchestrator. Type /help for commands, /exit to quit.\n")
 
