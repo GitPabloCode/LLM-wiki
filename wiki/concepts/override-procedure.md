@@ -1,33 +1,60 @@
 # Override Procedure
 
-**Source:** [[subset35]], [[subset58]] | **Date:** 2025-07-17 | **Type:** concept
+**Source:** [[subset26-2]], [[subset35]], [[subset58]] | **Date:** 2026-05-12 | **Type:** concept
 
-The Override procedure (Trip Inhibition, Pass Stop, or Pass signal at danger) provides a coordinated override capability for both the active system and the system to be activated, without applying brakes by both systems [subset58 ¶498].
+The Override procedure allows a train to pass its End of Movement Authority in specific degraded situations, such as failed signals, failed track circuits, radio unavailability, or RBC unreachability. [subset26-2 ¶3928-¶3935]
 
-## Application Layer Packets (SUBSET-058)
+## ETCS Override Procedure (from SUBSET-026-2)
 
-- **STM-6** (val=6): Override Activation — sent by STM to STM Control Function in DA state to report activation of the Override procedure. No additional variables beyond header. [subset58 ¶137]-[subset58 ¶138]
-- **STM-7** (val=7): Override Status — sent by STM Control Function to all STMs in PO, CO, DE, CS, HS, DA states to report a change in ETCS Override status. Contains Q_OVR_STATUS (1 bit: 0=not active, 1=active). [subset58 ¶139]-[subset58 ¶140]
-- **Q_OVR_STATUS** (variable): 1-bit qualifier indicating whether ETCS Override status is active or not. [subset58 ¶432]-[subset58 ¶433]
+### Selection Conditions (5.8.2)
+The driver can select 'Override' only when:
+- Train speed ≤ speed limit for triggering override (national value) [subset26-2 ¶3949]
+- Current mode is FS, LS, OS, SR, SH, UN, PT, SB (L2/3 only), or SN [subset26-2 ¶3950]
+- Validated Train Data and Train Running Number available (except when already in SH) [subset26-2 ¶3951]
 
-## Mechanism
+### Mode Change on Override (5.8.3)
+- From FS, LS, OS, SB, PT: → SR mode [subset26-2 ¶3956]
+- From SH: remains SH [subset26-2 ¶3957]
+- From UN/SN: changes to SR only when level changes to L1/2/3 [subset26-2 ¶3958]
 
-- When Override is activated in the active system (ETCS or STM), all on-board systems receive notification via STM-7 [subset58 ¶499]
-- Each system independently monitors its specific Override limits (time, distance, trackside info) and trip inhibition
-- After a level transition, the newly activated system can immediately have its Override function active [subset58 ¶500]
+### Active Override Effects
+- If mode was OS, LS, or FS: former EOA/LOA retained [subset26-2 ¶3959]
+- If mode was SB or PT: current train front position considered as former EOA/LOA [subset26-2 ¶3959]
+- The former EOA/LOA is deleted if train reads 'stop if in SR mode' or if SR mode is left [subset26-2 ¶3962-¶3964]
+- In L2/3: RBC informed of override via mode change report [subset26-2 ¶3965]
+- RBC may transmit SR distance limits and list of balises [subset26-2 ¶3966]
+- Override revokes all previously received emergency stop orders in L2/3 [subset26-2 ¶3967]
+- Driver may modify SR mode speed limit and distance [subset26-2 ¶3968]
+- Train trip is inhibited; MRSP includes Override function related Speed Restriction [subset26-2 ¶3969]
+- 'Override active' indicated to driver (exceptions: activated by STM, or in level NTC after transition) [subset26-2 ¶3970-¶3972]
+- New SR distance from EUROLOOP rejected while override active [subset26-2 ¶3973]
+- Re-selecting Override while already active restarts time and distance supervision [subset26-2 ¶3974]
 
-## ETCS Override Activation in Level NTC
+### End of Override (5.8.4)
+Override ends when any of:
+a) Max time for train trip suppression elapses (national value) [subset26-2 ¶3977]
+b) Train runs more than distance for trip suppression (national value) [subset26-2 ¶3978]
+c) Former EOA/LOA passed with min safe antenna position [subset26-2 ¶3979]
+d) Train passes 'stop if in SR' or 'stop if in SH' balise group [subset26-2 ¶3980]
+e) Train passes balise group giving proceed information (MA with no zero speed restriction) [subset26-2 ¶3981]
+f) In L2/3, MA received from RBC [subset26-2 ¶3982]
+g) Train passes balise group not in expected list for SR or SH mode [subset26-2 ¶3983]
+h) Train overpasses SR distance with estimated front end [subset26-2 ¶3984]
+i) On-board switches to TR, LS, OS, or SH mode [subset26-2 ¶3985]
 
-- ETCS Override status is activated when in level NTC and the ERTMS/ETCS on-board receives an activation report (STM-6) from the active STM [subset58 ¶502]
-- The ETCS Override function is reset each time a new activation report is received from the active STM [subset58 ¶503]
-- ERTMS/ETCS on-board reports its Override status to all connected STMs whenever it changes and at connection establishment via STM-7 [subset58 ¶504]-[subset58 ¶506]
+For UN and SN modes, only conditions a) and b) are supervised. [subset26-2 ¶3986]
 
-## Supervision During Override
+## STM-Level Override Coordination (from SUBSET-035/058)
 
-If Override is active while in Mode SN, no speed supervision is performed by the ERTMS/ETCS on-board or any connected STMs except for the active STM [subset58 ¶508].
+The Override procedure provides a coordinated capability across both ETCS and STM systems [subset58 ¶498].
 
-## Cross-references
-- [[stm-control-function]] — Handles the Override procedure
-- [[stm]] — The Specific Transmission Module
-- [[stm-states]] — STM state definitions
-- [[fffis-stm-application-layer]] — Application Layer protocol
+See [[stm-control-function]] for STM-override packet details.
+
+## Cross-References
+- [[etcs-modes]] — SR, SH, UN, SN modes
+- [[stm-control-function]] — STM override coordination
+- [[stm-states]] — STM state machine
+- [[train-trip-procedure]] — Override as alternative when RBC unreachable
+- [[subset26-1]] — Core SRS principles
+- [[subset35]] — STM specification
+- [[subset58]] — STM Application Layer

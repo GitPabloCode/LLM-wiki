@@ -80,6 +80,9 @@ def chunk_document(doc_path: Path, target_tokens: int = 60000, encoding: str = "
         chunk["index"] = i
         chunk["total"] = total
 
+    total_tokens = sum(c["token_count"] for c in chunks)
+    print(f"[chunking] {len(sections)} sezioni → {total} chunk ({total_tokens:,} token totali, ~{target_tokens:,} token/chunk target)")
+
     return chunks
 
 

@@ -2,8 +2,42 @@ from datapizza.agents import Agent
 from datapizza.memory import Memory
 from datapizza.tools import tool
 from .config import WikiConfig
-from .query_agent import _is_useless_report
-from .schemas import ORCHESTRATOR_PROMPT
+from .query_agent import QueryAgent
+from .schemas import WIKI_CONVENTIONS
+
+
+ORCHESTRATOR_PROMPT = f"""You are the Orchestrator of LLM Wiki, a system that maintains a personal knowledge base using specialized AI agents.
+
+Your role:
+1. Talk to the user naturally and helpfully in Italian or English (match the user's language)
+2. When the user requests something that requires a specialized agent, delegate silently
+3. When the sub-agent finishes, synthesize the result and continue the conversation
+
+DELEGATION RULES:
+- **INGEST**: user asks to process/ingest/add a document, do ingestion, "aggiungi il documento X", "processa il documento Y", etc.
+  → Delegate to wiki_ingest with the document name
+
+- **QUERY**: user asks substantive questions about document content, "cos'è X?", "spiegami Y", "che numero ha X?", "quali sono i componenti di...?"
+  → Delegate to wiki_query with the question. The pipeline (Wiki Router → Source Agent) runs automatically.
+  → After wiki_query returns, do NOT add any text. Just stop.
+  → If the user asks to go deeper ("approfondisci", "vai più a fondo") → call wiki_deepen.
+
+- **LINT**: user asks to check/verify/health-check the wiki, "controlla il wiki", "ci sono contraddizioni?", "il wiki è aggiornato?", "fai un health check"
+  → Delegate to wiki_lint
+
+- **NORMAL CHAT**: greetings, "quali documenti abbiamo?", "mostrami l'indice", "come funziona il sistema?"
+  → Answer directly without delegating
+
+IMPORTANT:
+- For INGEST and LINT: after delegation, present the result clearly and ask if the user wants to explore further.
+- For QUERY: the response already includes research from source documents. Present it to the user as received.
+- wiki_deepen uses the stored wiki research context — do NOT pass the question again.
+- Do NOT say "I'm delegating to..." — activate the sub-agent transparently.
+- CRITICAL: NEVER modify, remove, rewrite, or reformat [doc_name ¶N] references in the agent's response. Output them EXACTLY as the agent wrote them. These are citations that must reach the user unchanged.
+
+Wiki conventions for your reference:
+{WIKI_CONVENTIONS}
+"""
 
 
 class OrchestratorAgent:
@@ -27,50 +61,66 @@ class OrchestratorAgent:
 
         @tool
         def wiki_ingest(doc_name: str) -> str:
-            """Ingest a document: chunk, extract knowledge, write/update wiki pages."""
+            """Ingest a document: pre-split if too large, then ingest each (sub)document."""
+            print(f"\n[orchestrator] avvio ingest per '{doc_name}'...")
             from .ingest_agent import IngestAgent
-            agent = IngestAgent(config)
-            return agent.ingest(doc_name)
+            from .chunking import count_tokens
+
+            doc_path = config.processed_dir / doc_name / "document.md"
+            if not doc_path.exists():
+                return f"Error: document not found at {doc_path}"
+
+            content = doc_path.read_text(encoding="utf-8")
+            token_count = count_tokens(content, config.token_encoding)
+
+            if token_count > 200_000:
+                # Pre-split into sub-documents, then ingest each
+                from docling_converter import split_large_document
+                sub_names = split_large_document(str(doc_name), str(config.processed_dir))
+                results = []
+                agent = IngestAgent(config)
+                for sub in sub_names:
+                    results.append(agent.ingest(sub))
+                return f"Ingest completato: {len(sub_names)} sub-documents processati.\n\n" + "\n".join(results)
+            else:
+                agent = IngestAgent(config)
+                return agent.ingest(doc_name)
 
         @tool
         def wiki_query(question: str) -> str:
-            """Answer a question by researching the wiki ONLY (no source documents).
+            """Answer a question: Wiki Router finds sources, Source Agent researches.
 
-            Call FIRST when the user asks a question.
-            The result is stored and returned directly to the user — the orchestrator
-            MUST NOT modify or add to it. If the report shows no results, call
-            wiki_deepen immediately.
+            Always call FIRST for user questions. The pipeline is always:
+            wiki_router → source_agent, never wiki-only.
             """
-            from .query_agent import QueryAgent
             agent = QueryAgent(config)
-            result = agent.ask_wiki(question)
-            orchestrator_self._last_report = result
+
+            # Stage 1: Wiki Router collects anchors
+            routing_report = agent.route(question)
+            orchestrator_self._last_report = routing_report
             orchestrator_self._last_question = question
 
-            # Add deepen hint if wiki found results
-            if not _is_useless_report(result):
-                result += "\n\n---\n*Scrivi \"approfondisci\" per leggere i documenti originali.*"
-
-            orchestrator_self._direct_response = result
-            return result  # LLM sees this to decide if auto-deepen is needed
+            # Stage 2: Source Agent researches from anchors (always)
+            final_answer = agent.research(question, routing_report)
+            orchestrator_self._direct_response = final_answer
+            return final_answer
 
         @tool
         def wiki_deepen() -> str:
-            """Read source documents to give a deeper answer.
+            """Re-research source documents with expanded context.
 
-            Call when wiki_query returned no results OR user asks to deepen.
-            Uses stored wiki context. Result goes directly to user.
+            Call when the user asks to go deeper on the previous answer.
+            Uses stored routing context.
             """
             if not orchestrator_self._last_report:
                 return "Nessuna ricerca wiki precedente da approfondire."
-            from .query_agent import QueryAgent
             agent = QueryAgent(config)
-            result = agent.ask_deep(
+            result = agent.research(
                 orchestrator_self._last_question,
                 orchestrator_self._last_report,
             )
             orchestrator_self._direct_response = result
-            return result  # LLM sees this but user gets _direct_response
+            return result
 
         @tool
         def wiki_lint() -> str:

@@ -1,46 +1,46 @@
 from datapizza.agents import Agent
 from .config import WikiConfig
-from .schemas import WIKI_RESEARCH_PROMPT, SOURCE_WITH_ANCHORS_PROMPT, SOURCE_DEEP_DIVE_PROMPT
+from .schemas import WIKI_ROUTER_PROMPT, SOURCE_RESEARCH_PROMPT, SOURCE_DEEP_DIVE_PROMPT
 from .tools import file_tools
 from .tools.transform_tools import transform_anchors_deterministic
 
 
 class QueryAgent:
-    """Three independent agents with deterministic tool separation.
+    """Two-agent pipeline: Wiki Router finds sources, Source Agent researches.
 
-    - Wiki Agent (wiki/ only): answers from wiki pages
-    - Source Agent A (processed_documents/ only): starts from wiki anchors, explores outward
-    - Source Agent B (processed_documents/ only): deep dive from scratch, no wiki hints
+    - Wiki Router (wiki/ only, max 4 steps): collects document anchors
+    - Source Agent (processed_documents/ only): researches from anchors, produces answer
+    - Source Deep Dive (fallback): autonomous exploration when wiki has nothing
     """
 
     def __init__(self, config: WikiConfig):
         self.config = config
 
-        # Wiki Agent — wiki/ tools ONLY
-        self._wiki_agent = Agent(
-            name="wiki_agent",
+        self._wiki_router = Agent(
+            name="wiki_router",
             client=config.create_client(config.model_query),
-            system_prompt=WIKI_RESEARCH_PROMPT,
+            system_prompt=WIKI_ROUTER_PROMPT,
             tools=[
                 file_tools.read_wiki_page,
                 file_tools.list_wiki_pages,
                 file_tools.search_wiki,
             ],
-            max_steps=12,
+            max_steps=5,
         )
 
-        # Source Agent A — has wiki anchors, explores outward from them
-        self._source_agent_a = Agent(
-            name="source_agent_anchors",
+        self._source_agent = Agent(
+            name="source_agent",
             client=config.create_client(config.model_query),
-            system_prompt=SOURCE_WITH_ANCHORS_PROMPT,
-            tools=[file_tools.read_source_document],
+            system_prompt=SOURCE_RESEARCH_PROMPT,
+            tools=[
+                file_tools.read_source_document,
+                file_tools.get_document_info,
+            ],
             max_steps=8,
         )
 
-        # Source Agent B — no wiki hints, deep dives autonomously
-        self._source_agent_b = Agent(
-            name="source_agent_deep_dive",
+        self._source_deep_dive = Agent(
+            name="source_deep_dive",
             client=config.create_client(config.model_query),
             system_prompt=SOURCE_DEEP_DIVE_PROMPT,
             tools=[
@@ -51,50 +51,56 @@ class QueryAgent:
             max_steps=10,
         )
 
-    def ask_wiki(self, question: str) -> str:
-        """Stage 1: Wiki Agent answers from wiki pages only."""
-        result = self._wiki_agent.run(
+    def route(self, question: str) -> str:
+        """Stage 1: Wiki Router finds relevant documents and anchors."""
+        result = self._wiki_router.run(
             f"Domanda dell'utente: {question}\n\n"
-            f"Rispondi usando SOLO le pagine wiki. Usa il formato Risposta/Fonti richiesto."
+            f"Trova i documenti e gli anchor rilevanti. NON rispondere alla domanda."
         )
         return transform_anchors_deterministic(_extract_text(result))
 
-    def ask_deep(self, question: str, wiki_report: str) -> str:
-        """Stage 2 with wiki anchors: Source Agent A explores from anchors outward."""
-        useless = _is_useless_report(wiki_report)
+    def research(self, question: str, routing_report: str) -> str:
+        """Stage 2: Source Agent researches from routing anchors, produces full answer."""
+        has_anchors = _has_anchors(routing_report)
 
-        if useless:
-            # No wiki anchors — use Agent B for autonomous deep dive
+        if has_anchors:
             prompt = (
                 f"Domanda dell'utente: {question}\n\n"
-                f"Il Wiki Agent non ha trovato nulla. Fai un deep dive autonomo "
-                f"tra tutti i documenti in processed_documents/ per trovare la risposta."
+                f"Routing report dal Wiki Router:\n\n{routing_report}\n\n"
+                f"Parti dagli anchor forniti. Inizia la risposta con il preambolo (Overview) del routing report."
             )
-            result = self._source_agent_b.run(prompt)
+            result = self._source_agent.run(prompt)
         else:
-            # Has wiki anchors — use Agent A to explore from anchors
             prompt = (
                 f"Domanda dell'utente: {question}\n\n"
-                f"Rapporto del Wiki Agent con gli anchor da cui partire:\n\n{wiki_report}\n\n"
-                f"Parti dagli anchor nella sezione 'Ancora per approfondimento'. "
-                f"Usa read_source_document con context_lines=50, poi allarga se serve."
+                f"Il Wiki Router non ha trovato anchor. Fai un deep dive autonomo."
             )
-            result = self._source_agent_a.run(prompt)
+            result = self._source_deep_dive.run(prompt)
 
         return transform_anchors_deterministic(_extract_text(result))
 
+    def ask_wiki(self, question: str) -> str:
+        """Legacy alias for route()."""
+        return self.route(question)
 
-def _is_useless_report(report: str) -> bool:
-    """Check if the wiki report indicates no useful results were found."""
-    no_results_markers = [
-        "nessuna informazione trovata",
-        "fonti: nessuna",
-        "no results found",
-        "nessun risultato",
-        "non ho trovato",
-    ]
-    report_lower = report.lower()
-    return any(marker in report_lower for marker in no_results_markers)
+    def ask_deep(self, question: str, routing_report: str) -> str:
+        """Legacy alias for research()."""
+        return self.research(question, routing_report)
+
+
+def _has_anchors(report: str) -> bool:
+    """Check if the routing report contains usable anchors."""
+    import re
+    return bool(re.search(r'\[(\w[\w-]*)\s+¶\d', report))
+
+
+def _needs_source_lookup(report: str) -> bool:
+    """Always True: the pipeline always does wiki→source for substantive questions."""
+    return True
+
+
+# Backward compatibility
+_is_useless_report = _needs_source_lookup
 
 
 def _extract_text(result):

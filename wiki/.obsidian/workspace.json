@@ -4,17 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "52b60be45b21532a",
+        "id": "aecb744233291ce9",
         "type": "tabs",
         "children": [
           {
-            "id": "275dae808fefc588",
+            "id": "a253ccbe808e4e9e",
             "type": "leaf",
             "state": {
-              "type": "graph",
+              "type": "empty",
               "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Vista grafo"
+              "icon": "lucide-file",
+              "title": "Nuova scheda"
             }
           }
         ]
@@ -176,8 +176,20 @@
       "bases:Crea nuova Base": false
     }
   },
-  "active": "275dae808fefc588",
+  "active": "a253ccbe808e4e9e",
   "lastOpenFiles": [
+    "index.md.tmp.113793.035a4a2babc6",
+    "overview.md.tmp.113793.ee119b2fcae6",
+    "overview.md.tmp.113793.efa2c844a8b4",
+    "log.md.tmp.113793.1eae6b9dfc9d",
+    "overview.md.tmp.113793.9a4d9426c166",
+    "overview.md.tmp.113793.8cae3cd6199a",
+    "overview.md.tmp.113793.58cbb2980914",
+    "overview.md.tmp.113793.6bf30a059139",
+    "index.md.tmp.113793.16e4ec7938a4",
+    "index.md.tmp.113793.96bc0b7f419c",
+    "index.md.tmp.113793.16f68df0123e",
+    "summaries/subset26.md",
     "summaries/subset35.md",
     "STM Control Function.md",
     "concepts/stm-customisable-dmi-service.md",

@@ -168,43 +168,6 @@ def get_document_info(doc_name: str, token_budget: int = 0) -> str:
 
 
 @tool
-def read_citations(doc_name: str) -> str:
-    """Read the citations.json for a processed document. Returns summary + sample entries.
-
-    Args:
-        doc_name: The document name (e.g., "subset40").
-
-    Returns summary with source_file, total_citable, and sample entries.
-    """
-    _, _, processed_dir, _ = _get_project_paths()
-    cit_path = processed_dir / doc_name / "citations.json"
-    if not cit_path.exists():
-        return f"Error: citations.json not found at {cit_path}"
-
-    data = json.loads(cit_path.read_text(encoding="utf-8"))
-    citable = data.get("citations", {})
-
-    types_count = {}
-    samples = []
-    for i, (key, val) in enumerate(citable.items()):
-        t = val.get("type", "unknown")
-        types_count[t] = types_count.get(t, 0) + 1
-        if i < 15:
-            samples.append(f"  {key}: [{val.get('type')}] {val.get('content', '')[:120]}")
-
-    lines = [
-        f"source_file: {data.get('source_file')}",
-        f"total_citable: {data.get('total_citable')}",
-        f"anchor_format: {data.get('anchor_format')}",
-        f"types: {json.dumps(types_count)}",
-        "",
-        "Sample entries:",
-    ] + samples
-
-    return "\n".join(lines)
-
-
-@tool
 def read_wiki_page(page_path: str) -> str:
     """Read an existing wiki page.
 
