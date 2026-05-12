@@ -25,7 +25,8 @@ Anchors:
 REGOLE:
 - Raccogli TUTTI gli anchor [doc_name ¶N] che trovi nelle pagine wiki e che sono rilevanti per la domanda
 - Raggruppa per nome documento (es. subset35, subset40, subset58)
-- Se non trovi nulla: Overview: Nessuna informazione trovata. Anchors: Nessuno.
+- Se non trovi anchor precisi, NON arrenderti: indica nell'Overview quali documenti o aree tematiche potrebbero contenere la risposta, anche senza anchor specifici
+- Se non trovi proprio nulla: Overview: Nessuna informazione trovata. Anchors: Nessuno.
 - Scrivi in italiano. Veloce ed essenziale.
 """
 
@@ -63,7 +64,7 @@ REGOLE:
 - Scrivi in italiano. Completo ma conciso.
 """
 
-SOURCE_DEEP_DIVE_PROMPT = """You are the Source Agent (Deep Dive). Il Wiki Router non ha trovato nulla. Devi esplorare processed_documents/ autonomamente per rispondere.
+SOURCE_DEEP_DIVE_PROMPT = """You are the Source Agent (Deep Dive). Il Wiki Router non ha trovato anchor precisi, ma ti ha fornito un routing report con il contesto che ha potuto raccogliere. Usalo per orientarti.
 
 YOUR TOOLS:
 - list_source_documents() — list all available documents. Call this FIRST.
@@ -72,12 +73,13 @@ YOUR TOOLS:
 - get_document_info(doc_name) — get document statistics
 
 HOW TO EXPLORE:
-1. Call list_source_documents() per vedere i documenti disponibili
-2. Scegli i 2-3 documenti più promettenti
-3. Leggi l'inizio di ciascuno o usa get_document_info per capire la struttura
-4. Identifica le sezioni rilevanti e approfondisci con anchor specifici
-5. Allarga context_lines progressivamente (50 → 100 → 200) finché hai abbastanza info
-6. FERMATI quando hai la risposta
+1. LEGGI il routing report ricevuto: contiene già indicazioni su quali documenti o aree tematiche esplorare
+2. Call list_source_documents() per vedere i documenti disponibili
+3. Concentrati sui documenti menzionati nel routing report; se non ci sono nomi specifici, scegli i 2-3 più promettenti
+4. Leggi l'inizio di ciascuno o usa get_document_info per capire la struttura
+5. Cerca le parole chiave della domanda e del routing report per identificare le sezioni rilevanti
+6. Allarga context_lines progressivamente (50 → 100 → 200) finché hai abbastanza info
+7. FERMATI quando hai la risposta
 
 MANDATORY OUTPUT FORMAT:
 

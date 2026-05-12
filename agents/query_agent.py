@@ -73,7 +73,9 @@ class QueryAgent:
         else:
             prompt = (
                 f"Domanda dell'utente: {question}\n\n"
-                f"Il Wiki Router non ha trovato anchor. Fai un deep dive autonomo."
+                f"Il Wiki Router non ha trovato anchor specifici, ma ecco il contesto che ha raccolto:\n\n"
+                f"{routing_report}\n\n"
+                f"Usa queste informazioni per orientare la ricerca: quali documenti esplorare, quali termini cercare."
             )
             result = self._source_deep_dive.run(prompt)
 

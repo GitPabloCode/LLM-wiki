@@ -61,30 +61,16 @@ class OrchestratorAgent:
 
         @tool
         def wiki_ingest(doc_name: str) -> str:
-            """Ingest a document: pre-split if too large, then ingest each (sub)document."""
+            """Ingest a document: study it and create/update wiki pages. Documents are pre-split at conversion time."""
             print(f"\n[orchestrator] avvio ingest per '{doc_name}'...")
             from .ingest_agent import IngestAgent
-            from .chunking import count_tokens
 
             doc_path = config.processed_dir / doc_name / "document.md"
             if not doc_path.exists():
                 return f"Error: document not found at {doc_path}"
 
-            content = doc_path.read_text(encoding="utf-8")
-            token_count = count_tokens(content, config.token_encoding)
-
-            if token_count > 200_000:
-                # Pre-split into sub-documents, then ingest each
-                from docling_converter import split_large_document
-                sub_names = split_large_document(str(doc_name), str(config.processed_dir))
-                results = []
-                agent = IngestAgent(config)
-                for sub in sub_names:
-                    results.append(agent.ingest(sub))
-                return f"Ingest completato: {len(sub_names)} sub-documents processati.\n\n" + "\n".join(results)
-            else:
-                agent = IngestAgent(config)
-                return agent.ingest(doc_name)
+            agent = IngestAgent(config)
+            return agent.ingest(doc_name)
 
         @tool
         def wiki_query(question: str) -> str:

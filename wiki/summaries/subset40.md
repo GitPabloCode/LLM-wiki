@@ -1,6 +1,6 @@
 # SUBSET-040: ERTMS/ETCS Dimensioning and Engineering Rules
 
-**Source:** [[subset40]] | **Date:** 2025-07-17 | **Type:** summary
+**Source:** This document | **Date:** 2025-07-17 | **Type:** summary
 
 SUBSET-040 v2.3.0 (2009-04-07) defines the dimensioning and engineering rules for ERTMS/ETCS Class 1 systems. It provides system-related constraints for equipment installation, information exchange, and message sizing that complement the System Requirements Specification (SUBSET-026) and subsystem FFFIS documents to ensure interoperability. [subset40 ¶30][subset40 ¶31]
 

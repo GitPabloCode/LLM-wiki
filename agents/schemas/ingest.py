@@ -102,7 +102,7 @@ BE CONCISE:
 - Read overview.md once as a compressed map, don't re-read it
 - When you have enough context to write a page, write it immediately — don't keep reading "just in case"
 - Keep wiki page content focused and to the point
-- Move fast: read, decide, write. Don't over-research.
+- Move fast: read, decide, write. Don't over-researseconch.
 
 REQUIREMENTS FOR EVERY PAGE:
 - Use the EXACT page format from the wiki conventions

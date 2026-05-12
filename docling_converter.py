@@ -854,26 +854,46 @@ def main() -> None:
         if bbox_pdf_path:
             print(f"   ✅ {bbox_pdf_path}")
 
+    # ── Auto-split per documenti grandi ───────────────────────────────────────
+    import tiktoken
+    enc = tiktoken.get_encoding("cl100k_base")
+    md_content = md_path.read_text(encoding="utf-8")
+    md_tokens = len(enc.encode(md_content))
+    sub_names = []
+
+    if md_tokens > 60_000:
+        print("\n✂️  Documento >60K token, auto-split in sub-documenti...")
+        sub_names = split_large_document(pdf_path.stem, str(output_dir.parent),
+                                         target_tokens=60_000)
+        print(f"   {len(sub_names)} sub-documenti creati")
+
     # ── Riepilogo ─────────────────────────────────────────────────────────────
     print("\n" + "=" * 60)
     print("✅ Conversione completata!")
-    print(f"   📄 Markdown (con anchor)  : {md_path}")
+    print(f"   📄 Markdown (con anchor)  : {md_path}  ({md_tokens:,} token)")
     print(f"   🗂  Indice citazioni       : {cit_path}  ({citations['total_citable']} entry)")
     print(f"   🌐 Viewer HTML dinamico   : {viewer_path}")
     if image_map:
         print(f"   🖼  Immagini              : {images_dir} ({len(image_map)} file)")
     if bbox_pdf_path:
         print(f"   🔲 PDF bbox annotato      : {bbox_pdf_path}")
+    if sub_names:
+        print(f"   ✂️  Sub-documenti          : {', '.join(sub_names)}")
     print("=" * 60)
     print()
     print("💡 Citazione agente:")
     print('   Markdown:  "…testo… [¶42]"')
     print('   Lookup:    citations["¶42"]  →  {page_id, type, content, paragraph_id}')
     print('   Viewer:    viewer.html#¶42  →  pagina con bbox gialla')
+    if sub_names:
+        print()
+        print("📥 Per l'ingest, usa i sub-documenti:")
+        for sn in sub_names:
+            print(f"   → wiki_ingest(\"{sn}\")")
 
 
 def split_large_document(doc_name: str, processed_dir: str = "processed_documents",
-                         target_tokens: int = 180_000, encoding: str = "cl100k_base") -> list[str]:
+                         target_tokens: int = 60_000, encoding: str = "cl100k_base") -> list[str]:
     """Split a processed document into sub-documents by sections, never breaking a section.
 
     Each sub-document gets its own directory with document.md and filtered citations.json.
