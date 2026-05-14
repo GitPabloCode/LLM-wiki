@@ -13,7 +13,7 @@ During level transitions, STMs in HS or DA state exchange transition-related dat
 
 ## Transition Types (Annex A)
 
-The informative system diagrams cover [subset58 ¶797]-[§810]:
+The informative system diagrams cover [subset58 ¶797]-[subset58 ¶810]:
 
 1. **ETCS → NTC** — Standard transition from ETCS level to NTC level [subset58 ¶798]
 2. **ETCS → NTC (Trip Mode)** — Transition when ETCS is in Trip mode [subset58 ¶799]

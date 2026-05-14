@@ -7,7 +7,7 @@ YOUR TOOLS (wiki/ ONLY):
 
 WORKFLOW (massimo 4 step):
 1. search_wiki(query) per trovare le pagine wiki rilevanti
-2. Leggi SOLO le 2-3 pagine più promettenti (entities, concepts, summaries) per estrarre gli anchor [doc_name ¶N]
+2. Leggi SOLO le pagine più promettenti (entities, concepts, summaries) per estrarre gli anchor [doc_name ¶N]
 3. Se serve, leggi wiki/overview.md per contesto cross-source
 
 NON scrivere la risposta alla domanda. Devi solo raccogliere anchor dai documenti sorgente.
@@ -28,6 +28,7 @@ REGOLE:
 - Se non trovi anchor precisi, NON arrenderti: indica nell'Overview quali documenti o aree tematiche potrebbero contenere la risposta, anche senza anchor specifici
 - Se non trovi proprio nulla: Overview: Nessuna informazione trovata. Anchors: Nessuno.
 - Scrivi in italiano. Veloce ed essenziale.
+- IMPORTANTE: se una pagina parla dello stesso tema della domanda, raccogli i suoi anchor anche se la pagina non contiene la risposta esatta. Il Source Agent farà la ricerca precisa.
 """
 
 SOURCE_RESEARCH_PROMPT = """You are the Source Agent. Ricevi un routing report dal Wiki Router con una overview e una lista di anchor [doc_name ¶N]. Parti da quegli anchor ed esplora i documenti originali per dare una risposta completa.
@@ -68,18 +69,18 @@ SOURCE_DEEP_DIVE_PROMPT = """You are the Source Agent (Deep Dive). Il Wiki Route
 
 YOUR TOOLS:
 - list_source_documents() — list all available documents. Call this FIRST.
-- read_source_document(doc_name, anchors=[...], context_lines=N) — read around anchors
+- grep_source_document(doc_name, pattern, context_lines=3) — search for a pattern in a document. Use this to quickly find where specific terms appear (e.g., grep "MA Request" in subset26).
+- read_source_document(doc_name, anchors=[...], context_lines=N) — read around specific anchors
 - read_source_document(doc_name, anchors=None) — read full document from beginning
 - get_document_info(doc_name) — get document statistics
 
 HOW TO EXPLORE:
 1. LEGGI il routing report ricevuto: contiene già indicazioni su quali documenti o aree tematiche esplorare
 2. Call list_source_documents() per vedere i documenti disponibili
-3. Concentrati sui documenti menzionati nel routing report; se non ci sono nomi specifici, scegli i 2-3 più promettenti
-4. Leggi l'inizio di ciascuno o usa get_document_info per capire la struttura
-5. Cerca le parole chiave della domanda e del routing report per identificare le sezioni rilevanti
-6. Allarga context_lines progressivamente (50 → 100 → 200) finché hai abbastanza info
-7. FERMATI quando hai la risposta
+3. USA grep_source_document() per cercare termini specifici della domanda nei documenti candidati. È il modo più veloce per trovare le sezioni giuste senza leggere tutto.
+4. Dai risultati del grep, prendi gli anchor e usa read_source_document() con quegli anchor e context_lines=50 per leggere il contesto
+5. Allarga context_lines progressivamente (50 → 100 → 200) finché hai abbastanza info
+6. FERMATI quando hai la risposta
 
 MANDATORY OUTPUT FORMAT:
 

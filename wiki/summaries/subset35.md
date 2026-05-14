@@ -1,4 +1,4 @@
-da# SUBSET-035: ERTMS/ETCS Specific Transmission Module FFFIS
+# SUBSET-035: ERTMS/ETCS Specific Transmission Module FFFIS
 
 **Source:** [[subset35]] | **Date:** 2025-07-17 | **Type:** summary
 
@@ -24,7 +24,7 @@ Eight states defined: No Power (NP), Power On (PO), Configuration (CO), Data Ent
 - **DMI Function** — driver interaction via default window (buttons, indicators, sounds, text messages, supervision info) [subset35 ¶131]-[subset35 ¶138]
 - **TIU Function** — train interface signals (commands: regenerative brake, pantograph, etc.; status: traction, direction, cab) [subset35 ¶101]-[subset35 ¶111]
 - **BIU Function** — emergency and service brake commands/status [subset35 ¶112]-[subset35 ¶115]
-- **Odometer Function** — estimated speed/distance, confidence intervals [subset35 ¶561]-[§598]
+- **Odometer Function** — estimated speed/distance, confidence intervals [subset35 ¶561]-[subset35 ¶598]
 - **Juridical Data Function** — national juridical data recording [subset35 ¶116]-[subset35 ¶117]
 - **Reference Time** — common time base for all STMs [subset35 ¶97]-[subset35 ¶98]
 

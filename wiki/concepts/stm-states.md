@@ -11,11 +11,11 @@ The STM operates in one of eight states, managed by the [[stm-control-function]]
 | No Power | NP | STM is unpowered [subset58 ¶240] |
 | Power On | PO | Default state after switch-on; performs Safe Time Layer synchronisation and establishes connection to STM Control Function [subset58 ¶242]-[subset58 ¶247] |
 | Configuration | CO | Waiting for all configuration data to be exchanged (ETCS data, TIU/BIU status, odometer/brake parameters) [subset58 ¶249]-[subset58 ¶262] |
-| Data Entry | DE | Used by STMs requiring Specific NTC Data from the driver [subset58 ¶264]-[§268] |
+| Data Entry | DE | Used by STMs requiring Specific NTC Data from the driver [subset58 ¶264]-[subset58 ¶268] |
 | Cold Standby | CS | Initialised, configured, and in possession of all required information but trackside reception is turned off [subset58 ¶270] |
-| Hot Standby | HS | Can process information from/to national trackside, can send STM max speed and system speed/distance [subset58 ¶273]-[§280] |
+| Hot Standby | HS | Can process information from/to national trackside, can send STM max speed and system speed/distance [subset58 ¶273]-[subset58 ¶280] |
 | Data Available | DA | STM is responsible for train movement supervision [subset58 ¶282] |
-| Failure | FA | STM cannot work due to internal or external reasons; must not send messages on the bus except to report FA state [subset58 ¶285]-[§286] |
+| Failure | FA | STM cannot work due to internal or external reasons; must not send messages on the bus except to report FA state [subset58 ¶285]-[subset58 ¶286] |
 
 ## Application Layer Representation (SUBSET-058)
 

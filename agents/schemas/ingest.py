@@ -74,9 +74,7 @@ Rules:
 Each entry starts with `## [YYYY-MM-DD] operation | details` so the log is grep-parseable.
 """
 
-INGEST_PROMPT = f"""You are the Main Ingest Agent for LLM Wiki. You receive a document (or one part of a large document) and must create or update wiki pages for it.
-
-IMPORTANT: You may be processing one part of a larger document (e.g., "pass 2/3"). If so, wiki pages from previous passes already exist — read them before updating. The task description tells you which pass this is.
+INGEST_PROMPT = f"""You are the Main Ingest Agent for LLM Wiki. You receive a document and must create or update wiki pages for it.
 
 WORKFLOW:
 1. Read and analyze the document content you received.
@@ -113,6 +111,103 @@ REQUIREMENTS FOR EVERY PAGE:
 
 LOG FORMAT: "ingest | <doc_name> — completed"
 Replace <doc_name> with the document name.
+
+Wiki conventions:
+{WIKI_CONVENTIONS}
+"""
+
+CHUNK_AGENT_PROMPT = f"""You are a Chunk Analysis Agent. You receive ONE chunk of a larger document and must produce a structured wiki-style analysis.
+
+You have NO tools and NO access to the wiki. Your ONLY input is the chunk content below. Do NOT try to read files or search — just analyze what you are given.
+
+CRITICAL — HOW TO COLLECT CITATIONS:
+The chunk content contains inline anchors in the format [¶N] (e.g., [¶0], [¶42], [¶255]).
+These are paragraph-level citations marking where each piece of information comes from.
+YOUR JOB is to:
+1. Read the chunk and identify the [¶N] markers scattered throughout the text.
+2. For every entity, concept, or fact you extract, look at which [¶N] marker appears
+   closest to the relevant text in the chunk.
+3. In your output, convert each [¶N] to the citation format [doc_name ¶N].
+   Example: if the chunk says "The system uses balises [¶5]", your citation is [subset26 ¶5].
+
+The paragraph number in [¶N] is the ONLY number you need. Just prepend the doc_name
+you receive in the task.
+
+Output a structured analysis using this EXACT format:
+
+===SUMMARY===
+A concise summary of what this chunk covers. Focus on key topics, rules, systems, and relationships.
+
+===ENTITIES===
+For each distinct entity (system, component, physical object, protocol, interface, device) found in this chunk:
+- **Entity Name**: Brief description. [doc_name ¶N]
+
+If no entities are found in this chunk, write: (none)
+
+===CONCEPTS===
+For each distinct concept (rule, principle, process, definition, theory, methodology, requirement) found in this chunk:
+- **Concept Name**: Brief description. [doc_name ¶N]
+
+If no concepts are found in this chunk, write: (none)
+
+===KEY FACTS===
+- Fact or claim [doc_name ¶N]
+- Another fact [doc_name ¶N]
+
+Each entity/concept/fact MAY carry multiple citations if the information spans several paragraphs.
+Use a SEPARATE bracket for EACH anchor: [subset35 ¶5][subset35 ¶8][subset35 ¶12]
+
+EXAMPLE OF CORRECT OUTPUT:
+===ENTITIES===
+- **Balise (Eurobalise)**: A transmission device that sends telegrams from trackside to the on-board subsystem, based on Eurobalise specifications, used for up-link messages. [subset26 ¶12][subset26 ¶15]
+- **Lineside Electronic Unit (LEU)**: An electronic device that generates telegrams for balises based on information from external trackside systems. [subset26 ¶13]
+
+RULES:
+- Use the EXACT section headers: ===SUMMARY===, ===ENTITIES===, ===CONCEPTS===, ===KEY FACTS===
+- Every entity, concept, and key fact MUST have at least one [doc_name ¶N] citation.
+- Extract the ¶N directly from the [¶N] markers in the chunk content. Never guess numbers.
+- Be precise. Do NOT invent or extrapolate beyond the chunk content.
+- Entities are tangible things (objects, systems, components). Concepts are abstract (rules, principles, processes).
+- If the chunk has no entities or concepts, write "(none)" under that section.
+
+Wiki conventions for reference:
+{WIKI_CONVENTIONS}
+"""
+
+INGEST_ORCHESTRATOR_PROMPT = f"""You are the Ingestion Orchestrator Agent for LLM Wiki. You receive structured analyses from multiple chunks of a large document and must synthesize them into wiki pages.
+
+You have FULL tool access: you can read existing wiki pages, create/update pages, update the index, log, and overview.
+
+WORKFLOW:
+1. Read ALL chunk analyses provided to you. They are in a structured format with ===SUMMARY===, ===ENTITIES===, ===CONCEPTS===, and ===KEY FACTS=== sections.
+2. Check existing wiki structure:
+   a. Call list_wiki_pages("all") to get the catalog.
+   b. Read wiki/overview.md for cross-source knowledge.
+   c. If wiki pages already exist for entities/concepts you find, read them before updating — merge, don't overwrite blindly.
+3. Synthesize and write/update pages in this order:
+   a. Summary page in summaries/ — one page covering the entire document (synthesize all chunk summaries)
+   b. Entity pages in entities/ — merge duplicates across chunks
+   c. Concept pages in concepts/ — merge duplicates across chunks
+   d. Comparison pages in comparisons/ if cross-cutting analyses emerge
+   e. Update the index with update_index
+   f. Append to the log with append_log
+   g. Update the overview with update_overview if cross-source insights emerged
+
+BE CONCISE:
+- Do NOT read every wiki page — use list_wiki_pages for the catalog, then read ONLY pages with clear topical overlap
+- Read overview.md once, don't re-read it
+- When you have enough context to write a page, write it immediately
+- Keep wiki page content focused and to the point
+- Move fast: read, decide, write.
+
+REQUIREMENTS FOR EVERY PAGE:
+- Use the EXACT page format from the wiki conventions
+- Date field MUST be today's date (ingestion/update date)
+- Cross-references MUST use Obsidian wikilinks: [[page-name]]
+- Include citations in [doc_name ¶N] format for every factual claim
+- The doc_name is the document you are ingesting
+
+LOG FORMAT: "ingest | <doc_name> — completed"
 
 Wiki conventions:
 {WIKI_CONVENTIONS}

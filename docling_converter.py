@@ -854,20 +854,12 @@ def main() -> None:
         if bbox_pdf_path:
             print(f"   ✅ {bbox_pdf_path}")
 
-    # ── Auto-split per documenti grandi ───────────────────────────────────────
+    # ── Riepilogo ─────────────────────────────────────────────────────────────
     import tiktoken
     enc = tiktoken.get_encoding("cl100k_base")
     md_content = md_path.read_text(encoding="utf-8")
     md_tokens = len(enc.encode(md_content))
-    sub_names = []
 
-    if md_tokens > 60_000:
-        print("\n✂️  Documento >60K token, auto-split in sub-documenti...")
-        sub_names = split_large_document(pdf_path.stem, str(output_dir.parent),
-                                         target_tokens=60_000)
-        print(f"   {len(sub_names)} sub-documenti creati")
-
-    # ── Riepilogo ─────────────────────────────────────────────────────────────
     print("\n" + "=" * 60)
     print("✅ Conversione completata!")
     print(f"   📄 Markdown (con anchor)  : {md_path}  ({md_tokens:,} token)")
@@ -877,114 +869,12 @@ def main() -> None:
         print(f"   🖼  Immagini              : {images_dir} ({len(image_map)} file)")
     if bbox_pdf_path:
         print(f"   🔲 PDF bbox annotato      : {bbox_pdf_path}")
-    if sub_names:
-        print(f"   ✂️  Sub-documenti          : {', '.join(sub_names)}")
     print("=" * 60)
     print()
     print("💡 Citazione agente:")
     print('   Markdown:  "…testo… [¶42]"')
     print('   Lookup:    citations["¶42"]  →  {page_id, type, content, paragraph_id}')
     print('   Viewer:    viewer.html#¶42  →  pagina con bbox gialla')
-    if sub_names:
-        print()
-        print("📥 Per l'ingest, usa i sub-documenti:")
-        for sn in sub_names:
-            print(f"   → wiki_ingest(\"{sn}\")")
-
-
-def split_large_document(doc_name: str, processed_dir: str = "processed_documents",
-                         target_tokens: int = 60_000, encoding: str = "cl100k_base") -> list[str]:
-    """Split a processed document into sub-documents by sections, never breaking a section.
-
-    Each sub-document gets its own directory with document.md and filtered citations.json.
-    Returns the list of sub-document names.
-
-    Usage:
-        >>> from docling_converter import split_large_document
-        >>> names = split_large_document("subset26")
-        >>> print(names)  # ['subset26-1', 'subset26-2', 'subset26-3']
-    """
-    import json, re, tiktoken
-    from pathlib import Path
-
-    processed = Path(processed_dir)
-    src_dir = processed / doc_name
-    doc_md = src_dir / "document.md"
-    cit_json = src_dir / "citations.json"
-
-    if not doc_md.exists():
-        raise FileNotFoundError(f"Document not found: {doc_md}")
-
-    markdown = doc_md.read_text(encoding="utf-8")
-    raw_cit = json.loads(cit_json.read_text(encoding="utf-8")) if cit_json.exists() else {}
-    all_citations = raw_cit.get("citations", {})
-
-    enc = tiktoken.get_encoding(encoding)
-
-    # Split into sections at heading boundaries
-    heading_re = re.compile(r"^(#{1,6})\s+(.+)$", re.MULTILINE)
-    matches = list(heading_re.finditer(markdown))
-
-    sections = []
-    for i, m in enumerate(matches):
-        start = m.start()
-        end = matches[i + 1].start() if i + 1 < len(matches) else len(markdown)
-        content = markdown[start:end].rstrip()
-        sections.append({"content": content, "tokens": len(enc.encode(content))})
-
-    # Preamble (text before first heading)
-    first_heading_start = matches[0].start() if matches else len(markdown)
-    if first_heading_start > 0:
-        preamble = markdown[:first_heading_start].rstrip()
-        if preamble:
-            sections.insert(0, {"content": preamble, "tokens": len(enc.encode(preamble))})
-
-    # Pack sections into chunks
-    chunks = []
-    current_sections = []
-    current_tokens = 0
-
-    for sec in sections:
-        if current_sections and current_tokens + sec["tokens"] > target_tokens:
-            chunks.append(current_sections)
-            current_sections = []
-            current_tokens = 0
-        current_sections.append(sec)
-        current_tokens += sec["tokens"]
-
-    if current_sections:
-        chunks.append(current_sections)
-
-    total = len(chunks)
-    sub_names = []
-
-    for i, sec_list in enumerate(chunks):
-        sub_name = f"{doc_name}-{i + 1}"
-        sub_dir = processed / sub_name
-        sub_dir.mkdir(parents=True, exist_ok=True)
-
-        content = "\n\n".join(sec["content"] for sec in sec_list)
-
-        # Extract all ¶N anchors present in this chunk
-        anchors_in_chunk = set()
-        for m in re.finditer(r'\[¶(\d+)\]', content):
-            anchors_in_chunk.add(f"¶{m.group(1)}")
-
-        # Build filtered citations preserving original structure
-        filtered_cit = dict(raw_cit)
-        filtered_cit["citations"] = {k: v for k, v in all_citations.items() if k in anchors_in_chunk}
-        filtered_cit["total_citable"] = len(filtered_cit["citations"])
-
-        (sub_dir / "document.md").write_text(content, encoding="utf-8")
-        (sub_dir / "citations.json").write_text(json.dumps(filtered_cit, ensure_ascii=False, indent=2), encoding="utf-8")
-
-        total_tokens = len(enc.encode(content))
-        print(f"[split] {sub_name} — {total_tokens:,} token — {len(filtered_cit['citations'])} anchor")
-
-        sub_names.append(sub_name)
-
-    print(f"[split] {doc_name} → {total} sub-documents")
-    return sub_names
 
 
 if __name__ == "__main__":

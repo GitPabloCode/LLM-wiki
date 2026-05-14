@@ -8,14 +8,14 @@ The Driver Machine Interface (DMI) Function allows the active STM to interact wi
 
 The DMI Function manages [subset58 ¶132]-[subset58 ¶138]:
 - **Buttons** — push and release events with timestamps [subset58 ¶658]-[subset58 ¶660]
-- **Indicators** — display of information without driver input [subset58 ¶646]-[§655]
-- **Sounds** — audible information with configurable frequency and duration [subset58 ¶662]-[§670]
-- **Text messages** — display with attributes (colour, flashing), optional driver acknowledgement [subset58 ¶638]-[§644]
-- **Supervision information** — permitted speed, target speed, target distance, release speed, intervention speed, colours and display modes [subset58 ¶672]-[§699]
+- **Indicators** — display of information without driver input [subset58 ¶646]-[subset58 ¶655]
+- **Sounds** — audible information with configurable frequency and duration [subset58 ¶662]-[subset58 ¶670]
+- **Text messages** — display with attributes (colour, flashing), optional driver acknowledgement [subset58 ¶638]-[subset58 ¶644]
+- **Supervision information** — permitted speed, target speed, target distance, release speed, intervention speed, colours and display modes [subset58 ¶672]-[subset58 ¶699]
 
 ## DMI Channels
 
-Up to four DMI channels (point-to-point connections), with only one active at a time for DMI object communication [subset58 ¶618]-[§622]. The active DMI channel is indicated by packet STM-31 (NID_DMICHANNEL, 3-bit identifier) [subset58 ¶362]-[subset58 ¶363].
+Up to four DMI channels (point-to-point connections), with only one active at a time for DMI object communication [subset58 ¶618]-[subset58 ¶622]. The active DMI channel is indicated by packet STM-31 (NID_DMICHANNEL, 3-bit identifier) [subset58 ¶362]-[subset58 ¶363].
 
 ## Application Layer Packets (SUBSET-058)
 

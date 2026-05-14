@@ -86,6 +86,12 @@ class OrchestratorAgent:
             orchestrator_self._last_report = routing_report
             orchestrator_self._last_question = question
 
+            print(f"\n{'='*60}")
+            print(f"[WIKI ROUTER] RISPOSTA FINALE:")
+            print(f"{'='*60}")
+            print(routing_report)
+            print(f"{'='*60}\n")
+
             # Stage 2: Source Agent researches from anchors (always)
             final_answer = agent.research(question, routing_report)
             orchestrator_self._direct_response = final_answer

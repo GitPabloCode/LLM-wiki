@@ -25,7 +25,7 @@ class QueryAgent:
                 file_tools.list_wiki_pages,
                 file_tools.search_wiki,
             ],
-            max_steps=5,
+            max_steps=4,
         )
 
         self._source_agent = Agent(
@@ -47,6 +47,7 @@ class QueryAgent:
                 file_tools.list_source_documents,
                 file_tools.read_source_document,
                 file_tools.get_document_info,
+                file_tools.grep_source_document,
             ],
             max_steps=10,
         )

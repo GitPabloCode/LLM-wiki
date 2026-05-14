@@ -19,7 +19,7 @@ class WikiConfig:
     base_url: str = "http://localhost:11434/v1"
     api_key: str = "ollama"
     citation_base_url: str = "http://localhost:8765/go.html"
-    chunk_target_tokens: int = 60000
+    chunk_target_tokens: int = 30000
     token_encoding: str = "cl100k_base"
 
     def __post_init__(self):

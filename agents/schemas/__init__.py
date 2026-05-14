@@ -1,6 +1,8 @@
 from .ingest import (
     WIKI_CONVENTIONS,
     INGEST_PROMPT,
+    CHUNK_AGENT_PROMPT,
+    INGEST_ORCHESTRATOR_PROMPT,
     POST_INGEST_LINT_PROMPT,
 )
 from .query import (

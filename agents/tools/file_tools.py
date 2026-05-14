@@ -168,6 +168,78 @@ def get_document_info(doc_name: str, token_budget: int = 0) -> str:
 
 
 @tool
+def grep_source_document(doc_name: str, pattern: str, context_lines: int = 3) -> str:
+    """Search for a pattern/regex in a source document. Like grep.
+
+    Returns matching lines with the closest [¶N] anchor and line numbers.
+    Use this to quickly locate specific information in large documents
+    (e.g., searching for a message name in a 26K-line document).
+
+    Args:
+        doc_name: The document name (e.g., "subset26").
+        pattern: Text or regex to search for (case-insensitive).
+        context_lines: Lines of context around each match (default 3).
+
+    Returns matching lines with anchor references and line numbers.
+    """
+    import re
+    _, _, processed_dir, _ = _get_project_paths()
+    doc_path = processed_dir / doc_name / "document.md"
+    if not doc_path.exists():
+        return f"Error: document not found at {doc_path}"
+
+    lines = doc_path.read_text(encoding="utf-8").split("\n")
+
+    try:
+        regex = re.compile(pattern, re.IGNORECASE)
+    except re.error as e:
+        return f"Invalid regex pattern: {e}"
+
+    matches = []
+    for i, line in enumerate(lines):
+        if regex.search(line):
+            # Find closest [¶N] anchor before or at this line
+            anchor = None
+            for j in range(i, max(-1, i - 50), -1):
+                anchor_m = re.search(r'\[¶(\d+)\]', lines[j])
+                if anchor_m:
+                    anchor = int(anchor_m.group(1))
+                    break
+            if anchor is None:
+                for j in range(i + 1, min(len(lines), i + 50)):
+                    anchor_m = re.search(r'\[¶(\d+)\]', lines[j])
+                    if anchor_m:
+                        anchor = int(anchor_m.group(1))
+                        break
+
+            start = max(0, i - context_lines)
+            end = min(len(lines), i + context_lines + 1)
+            snippet = "\n".join(f"  {ln}: {lines[ln]}" for ln in range(start, end))
+
+            matches.append({
+                "line": i + 1,
+                "anchor": anchor,
+                "snippet": snippet,
+            })
+
+    if not matches:
+        return f"No matches for '{pattern}' in {doc_name}"
+
+    out = [f"Grep results for '{pattern}' in {doc_name} ({len(matches)} matches):\n"]
+    for m in matches[:30]:  # max 30 matches
+        anchor_str = f"¶{m['anchor']}" if m['anchor'] else "nessun anchor"
+        out.append(f"### Linea {m['line']} — anchor {anchor_str}")
+        out.append("```")
+        out.append(m["snippet"])
+        out.append("```\n")
+
+    if len(matches) > 30:
+        out.append(f"...e altre {len(matches) - 30} occorrenze. Raffina il pattern.")
+
+    return "\n".join(out)
+
+
+@tool
 def read_wiki_page(page_path: str) -> str:
     """Read an existing wiki page.
 
